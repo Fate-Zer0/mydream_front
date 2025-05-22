@@ -1,4 +1,4 @@
-qweqweeasdasdasasdasdasdazxccafeethnh<template>
+<template>
   <div class="min-h-screen overflow-hidden relative bg-black flex items-center justify-center p-4">
     <!-- 登录/注册面板 -->
     <div class="card w-full max-w-md shadow-xl bg-base-100 z-10">
@@ -7,7 +7,7 @@ qweqweeasdasdasasdasdasdazxccafeethnh<template>
         <h2 class="text-2xl font-bold text-center text-primary mb-6">
           📘 日积月累
         </h2>
-他git跟我去二231231青蛙大5
+
         <!-- 登录/注册切换标签 -->
         <div class="tabs tabs-boxed mx-auto">
           <a class="tab" :class="{ 'tab-active': isLogin }" @click="isLogin = true;showAlert = false">登录</a>
@@ -87,6 +87,7 @@ qweqweeasdasdasasdasdasdazxccafeethnh<template>
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   name: 'App',
   data() {
@@ -104,9 +105,35 @@ export default {
   methods: {
     handleSubmit() {
       if (this.isLogin) {
-        this.alertType = 'alert-success'
-        this.alertMessage = '成功: 登陆成功,即将跳转到首页!'
-        this.showAlert = true
+
+        const user = {
+          user_name: this.username,
+          user_pw: this.password
+        };
+
+        axios.post('/account/auth/chickLogin', user, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(response => {
+              if (response.data) { // 假设后端返回true表示登录成功
+                this.alertType = 'alert-success';
+                this.alertMessage = '成功: 登陆成功,即将跳转到首页!';
+                this.showAlert = true;
+                // 这里可以添加页面跳转逻辑
+              } else {
+                this.alertType = 'alert-danger';
+                this.alertMessage = '错误: 用户名或密码不正确!';
+                this.showAlert = true;
+              }
+            })
+            .catch(error => {
+              console.error('Error during login:', error);
+              this.alertType = 'alert-danger';
+              this.alertMessage = '错误: 发生异常，请稍后再试!';
+              this.showAlert = true;
+            });
+
       } else {
         if (this.password !== this.confirmPassword) {
           this.alertType = 'alert-warning'
