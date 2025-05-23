@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:8080', // 后端服务运行在8080端口
+      '/api': 'http://localhost:8080',
     },
   },
 })

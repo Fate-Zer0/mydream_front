@@ -76,8 +76,20 @@
 
           <!-- 提交按钮 -->
           <div class="form-control mt-6">
-            <button type="submit" class="btn btn-primary btn-block normal-case">
-              {{ isLogin ? '立即登录' : '立即注册' }}
+            <button
+                type="submit"
+                class="btn btn-primary btn-block normal-case relative overflow-hidden"
+                :disabled="loading"
+            >
+              <!-- 默认文字 -->
+              <span v-if="!loading" class="transition-opacity duration-300">
+                {{ isLogin ? '立即登录' : '立即注册' }}
+              </span>
+
+              <!-- 自定义 loading 动画 -->
+              <span v-else class="absolute inset-0 flex items-center justify-center">
+                <span class="loading-ring"></span>
+              </span>
             </button>
           </div>
         </form>
@@ -85,73 +97,37 @@
     </div>
   </div>
 </template>
+<style>
+/* 自定义 loading 动画 */
+.loading-ring {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: spin 1s linear infinite;
+}
 
-<script>
-import axios from 'axios';
-export default {
-  name: 'App',
-  data() {
-    return {
-      isLogin: true,
-      username: '',
-      password: '',
-      confirmPassword: '',
-      rememberMe: false,
-      showAlert: false,
-      alertType: 'alert-warning', // 默认警告类型
-      alertMessage: 'Warning: Invalid email address!'
-    }
-  },
-  methods: {
-    handleSubmit() {
-      if (this.isLogin) {
-
-        const user = {
-          user_name: this.username,
-          user_pw: this.password
-        };
-
-        axios.post('/api/account/auth/chickLogin', user, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }).then(response => {
-              if (response.data) { // 假设后端返回true表示登录成功
-                this.alertType = 'alert-success';
-                this.alertMessage = '成功: 登陆成功,即将跳转到首页!';
-                this.showAlert = true;
-                // 这里可以添加页面跳转逻辑
-              } else {
-                this.alertType = 'alert-danger';
-                this.alertMessage = '错误: 用户名或密码不正确!';
-                this.showAlert = true;
-              }
-            })
-            .catch(error => {
-              console.error('Error during login:', error);
-              this.alertType = 'alert-danger';
-              this.alertMessage = '错误: 发生异常，请稍后再试!';
-              this.showAlert = true;
-            });
-
-      } else {
-        if (this.password !== this.confirmPassword) {
-          this.alertType = 'alert-warning'
-          this.alertMessage = '警告: 两次输入的密码不一致!'
-          this.showAlert = true
-          return;
-        }
-        this.password = ''
-        this.isLogin = true
-        this.alertType = 'alert-success'
-        this.alertMessage = '成功: 注册成功,请重新输入账号密码登陆!'
-        this.showAlert = true
-      }
-    }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
-</script>
-
-<style scoped>
-
 </style>
+<script setup>
+import { useLoginForm } from '../../process/login/LoginProcess'
+
+const {
+  isLogin,
+  username,
+  password,
+  confirmPassword,
+  rememberMe,
+  showAlert,
+  alertType,
+  alertMessage,
+  loading,
+  handleSubmit
+} = useLoginForm()
+</script>
