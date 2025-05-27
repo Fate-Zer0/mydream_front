@@ -35,22 +35,30 @@ export function useLoginForm() {
                     }
                 })
 
-                if (res.data) {
-                    alertType.value = 'alert-success'
-                    alertMessage.value = '成功: 登陆成功,即将跳转到首页!'
-                    showAlert.value = true
+                const ret = res.data;
 
-                    router.push({ name: 'Home' })
+                if(ret.retCode=="0000"){
+                    if (ret.retValue) {
+                        alertType.value = 'alert-success'
+                        alertMessage.value = '成功: 登陆成功,即将跳转到首页!'
+                        showAlert.value = true
 
-                } else {
+                        router.push({ name: 'Home' })
+
+                    } else {
+                        alertType.value = 'alert-warning'
+                        alertMessage.value = '错误: 用户名或密码不正确!'
+                        showAlert.value = true
+                    }
+                }else{
                     alertType.value = 'alert-warning'
-                    alertMessage.value = '错误: 用户名或密码不正确!'
+                    alertMessage.value = '错误: 后台发生异常，请稍后再试!'
                     showAlert.value = true
                 }
             } catch (error) {
                 console.error('Error during login:', error)
                 alertType.value = 'alert-warning'
-                alertMessage.value = '错误: 发生异常，请稍后再试!'
+                alertMessage.value = '错误: 发送请求异常，请稍后再试!'
                 showAlert.value = true
             } finally {
                 loading.value = false // 结束加载

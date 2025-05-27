@@ -32,7 +32,11 @@ export function useCarousel() {
             } else {
                 // 其他幻灯片隐藏
                 slide.style.opacity = '0'
-                slide.style.transform = 'translateX(-100%)'
+                if(direction.value === 'next'){
+                    slide.style.transform = 'translateX(100%)'
+                }else {
+                    slide.style.transform = 'translateX(-100%)'
+                }
                 slide.style.zIndex = '0'
                 slide.style.transition = 'none'
             }

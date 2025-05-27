@@ -38,6 +38,27 @@
       <!-- 👇 主体内容 -->
       <div class="container mx-auto mt-6 px-4">
 
+        <!-- 警告信息 - 浮动版本（不影响布局） -->
+        <div
+            v-if="showAlert"
+            :class="[ 'alert', alertType ]"
+            class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-md mx-4 shadow-lg animate-bounce-in cursor-pointer"
+            role="alert"
+            @mouseenter="pauseAutoHide"
+            @mouseleave="resumeAutoHide"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ alertMessage }}</span>
+          <!-- 添加关闭按钮 -->
+          <button @click="closeAlert" class="btn btn-sm btn-ghost ml-auto hover:bg-opacity-20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         <!-- 👇 轮播图区域和右侧签到模块 -->
         <section class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8">
           <!-- 轮播图 -->
@@ -79,19 +100,43 @@
             </div>
           </aside>
 
-          <!-- 右侧签到模块 -->
+          <!-- 右侧签到模块 - 改进版本 -->
           <aside class="col-span-12 md:col-span-3 space-y-4">
             <div class="card bg-base-100 shadow-md">
               <div class="card-body items-center text-center">
                 <figure class="avatar my-2">
                   <div class="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                    <img src="https://picsum.photos/200" alt="用户头像" />
+                    <img :src="userStore.userimgUrl || 'https://picsum.photos/200'" alt="用户头像" />
                   </div>
                 </figure>
                 <h2 class="card-title">{{ userStore.username || '游客' }}</h2>
-                <p class="text-sm opacity-70">今天已签到 ✅</p>
-                <div class="card-actions mt-4">
-                  <button class="btn btn-success btn-sm">每日签到</button>
+                <p class="text-sm opacity-70">
+                  {{ hasSigned ? '今天已签到 ✅' : '今天还未签到 📝' }}
+                </p>
+                <!-- 签到统计信息 -->
+                <div class="stats stats-vertical shadow mt-2 w-full">
+                  <div class="stat py-2">
+                    <div class="stat-title text-xs">连续签到</div>
+                    <div class="stat-value text-lg">{{ signInStats.consecutive }}天</div>
+                  </div>
+                  <div class="stat py-2">
+                    <div class="stat-title text-xs">累计签到</div>
+                    <div class="stat-value text-lg">{{ signInStats.total }}天</div>
+                  </div>
+                </div>
+                <div class="card-actions mt-4 w-full">
+                  <button
+                      class="btn btn-success btn-sm w-full"
+                      :class="{ 'btn-disabled': hasSigned, 'loading': isSigningIn }"
+                      :disabled="hasSigned || isSigningIn"
+                      @click="performSignIn"
+                  >
+                    {{ isSigningIn ? '签到中...' : (hasSigned ? '✅ 已签到' : '📝 每日签到') }}
+                  </button>
+                </div>
+                <!-- 签到奖励提示 -->
+                <div v-if="!hasSigned" class="text-xs opacity-60 mt-2">
+                  签到获得积分 +10
                 </div>
               </div>
             </div>
@@ -125,9 +170,10 @@
 </template>
 
 <script setup>
-import { onMounted , nextTick } from 'vue'
+import { onMounted, nextTick, ref } from 'vue'
 import { useUserStore } from '../../stores/user'
 import { useCarousel } from '../../composables/useCarousel'
+import { useHomeProcess } from '../../process/home/HomeProcess'
 
 const userStore = useUserStore()
 
@@ -142,8 +188,88 @@ const {
   checkForSlides
 } = useCarousel()
 
+// 使用签到处理逻辑
+const {
+  showAlert,
+  alertType,
+  alertMessage,
+  hasSigned,
+  handleSignIn,
+  closeAlert,     // 关闭警告方法
+  pauseAutoHide,  // 暂停自动消失
+  resumeAutoHide  // 恢复自动消失
+} = useHomeProcess()
+
+// 签到相关状态
+const isSigningIn = ref(false)
+const signInStats = ref({
+  consecutive: 0,  // 连续签到天数
+  total: 0        // 累计签到天数
+})
+
+// 执行签到操作
+async function performSignIn() {
+  if (hasSigned.value || isSigningIn.value) return
+
+  isSigningIn.value = true
+  try {
+    // 调用签到方法，传入用户ID
+    await handleSignIn(userStore.userid || userStore.username)
+
+    // 签到成功后更新统计数据
+    if (hasSigned.value) {
+      signInStats.value.consecutive += 1
+      signInStats.value.total += 1
+    }
+  } catch (error) {
+    console.error('签到失败:', error)
+  } finally {
+    isSigningIn.value = false
+  }
+}
+
+// 获取签到统计数据
+async function loadSignInStats() {
+  try {
+    // 这里可以调用API获取签到统计
+    // const response = await axios.get(`/api/signin/stats?userid=${userStore.userid}`)
+    // signInStats.value = response.data
+
+    // 模拟数据
+    signInStats.value = {
+      consecutive: 5,
+      total: 28
+    }
+  } catch (error) {
+    console.error('获取签到统计失败:', error)
+  }
+}
+
 onMounted(async () => {
   await nextTick()
   checkForSlides()
+  await loadSignInStats()  // 加载签到统计数据
 })
 </script>
+
+<style scoped>
+/* 警告框入场动画 */
+@keyframes bounce-in {
+  0% {
+    transform: translate(-50%, -20px);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, 5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+</style>

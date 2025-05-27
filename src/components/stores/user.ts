@@ -2,19 +2,22 @@
 import { defineStore } from 'pinia'
 
 interface UserState {
+    userid: string;
     username: string;
-    avatarUrl: string;
+    userimgUrl: string;
 }
 
 export const useUserStore = defineStore('user', {
     state: (): UserState => ({
+        userid: '',
         username: '',
-        avatarUrl: ''
+        userimgUrl: ''
     }),
     actions: {
-        setUserInfo(username: string, avatarUrl: string) {
+        setUserInfo(userid: string,username: string, userimgUrl: string) {
+            this.userid = userid;
             this.username = username;
-            this.avatarUrl = avatarUrl;
+            this.userimgUrl = userimgUrl;
         }
     }
 });
