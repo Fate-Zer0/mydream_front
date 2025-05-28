@@ -9,7 +9,7 @@ export function useHomeProcess() {
     const hasSigned = ref(false)
     const router = useRouter()  // 修复1: 添加 router 导入和初始化
     let alertTimer: NodeJS.Timeout | null = null  // 用于存储定时器
-    let remainingTime = 3000  // 剩余时间
+    let remainingTime = 2000  // 剩余时间
     let startTime = 0  // 开始时间
 
     // 显示警告并设置自动消失
@@ -24,7 +24,7 @@ export function useHomeProcess() {
         showAlert.value = true
 
         // 重置时间
-        remainingTime = 3000
+        remainingTime = 2000
         startTime = Date.now()
 
         // 3秒后自动隐藏

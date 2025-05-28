@@ -1,156 +1,204 @@
 <template>
-  <div class="drawer">
+  <div class="drawer min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
     <!-- 抽屉开关 -->
     <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex flex-col">
 
-      <!-- 👇 顶部导航栏 -->
-      <header class="navbar bg-primary text-primary-content shadow-md">
+      <!-- 👇 顶部导航栏 - 使用渐变和毛玻璃效果 -->
+      <header class="navbar bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-xl backdrop-blur-sm border-b border-white/10">
         <div class="flex-1">
-          <a class="btn btn-ghost normal-case text-xl">📘 日积月累</a>
+          <a class="btn btn-ghost normal-case text-xl font-bold text-white hover:bg-white/10 transition-all duration-300">
+            <span class="text-2xl mr-2">📘</span> 日积月累
+          </a>
         </div>
         <div class="flex-none gap-x-6 items-center flex">
-          <button class="btn btn-sm btn-ghost">功能1</button>
-          <button class="btn btn-sm btn-ghost">功能2</button>
-          <button class="btn btn-sm btn-ghost">功能3</button>
+          <button class="btn btn-sm btn-ghost text-white hover:bg-white/20 hover:scale-105 transition-all duration-200">
+            <span class="mr-1">⚡</span>功能1
+          </button>
+          <button class="btn btn-sm btn-ghost text-white hover:bg-white/20 hover:scale-105 transition-all duration-200">
+            <span class="mr-1">🎯</span>功能2
+          </button>
+          <button class="btn btn-sm btn-ghost text-white hover:bg-white/20 hover:scale-105 transition-all duration-200">
+            <span class="mr-1">🚀</span>功能3
+          </button>
 
           <!-- 分隔线 -->
-          <div class="divider divider-horizontal h-10 m-0"></div>
+          <div class="divider divider-horizontal h-10 m-0 opacity-30"></div>
 
           <div class="dropdown dropdown-end ml-4 mr-4">
-            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
-              <div class="w-10 rounded-full">
+            <label tabindex="0" class="btn btn-ghost btn-circle avatar hover:scale-110 transition-transform duration-200">
+              <div class="w-10 rounded-full ring-2 ring-white/30 hover:ring-white/50 transition-all duration-200">
                 <img src="https://picsum.photos/200" alt="用户头像" />
               </div>
             </label>
             <ul
                 tabindex="0"
-                class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
+                class="menu menu-compact dropdown-content mt-3 p-2 shadow-2xl bg-white/95 backdrop-blur-sm rounded-2xl w-52 border border-gray-100"
             >
-              <li><a>我的资料</a></li>
-              <li><a>设置</a></li>
-              <li><a>退出登录</a></li>
+              <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200">👤 我的资料</a></li>
+              <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200">⚙️ 设置</a></li>
+              <li><a class="hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200">🚪 退出登录</a></li>
             </ul>
           </div>
         </div>
       </header>
 
-      <!-- 👇 主体内容 -->
-      <div class="container mx-auto mt-6 px-4">
-
-        <!-- 警告信息 - 浮动版本（不影响布局） -->
-        <div
-            v-if="showAlert"
-            :class="[ 'alert', alertType ]"
-            class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-md mx-4 shadow-lg animate-bounce-in cursor-pointer"
-            role="alert"
-            @mouseenter="pauseAutoHide"
-            @mouseleave="resumeAutoHide"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      <!-- 警告信息 - 优化样式 -->
+      <div
+          v-if="showAlert"
+          :class="[ 'alert', alertType, 'alert-top-fixed', 'animate-slide-down' ]"
+          role="alert"
+          @mouseenter="pauseAutoHide"
+          @mouseleave="resumeAutoHide"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>{{ alertMessage }}</span>
+        <button @click="closeAlert" class="btn btn-sm btn-ghost ml-auto hover:bg-white/20 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span>{{ alertMessage }}</span>
-          <!-- 添加关闭按钮 -->
-          <button @click="closeAlert" class="btn btn-sm btn-ghost ml-auto hover:bg-opacity-20">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        </button>
+      </div>
+
+      <!-- 👇 主体内容 -->
+      <div class="container mx-auto mt-8 px-4 pb-8">
 
         <!-- 👇 轮播图区域和右侧签到模块 -->
-        <section class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8">
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-10">
           <!-- 轮播图 -->
-          <aside  class="col-span-12 md:col-span-9">
+          <aside class="col-span-12 md:col-span-9">
             <!-- 轮播图容器 -->
-            <div class="carousel w-full relative h-60 overflow-hidden" id="carousel">
+            <div class="carousel w-full relative h-72 overflow-hidden rounded-3xl shadow-2xl border border-white/20" id="carousel">
               <!-- 轮播项 -->
               <div id="slide1" class="carousel-slide relative w-full">
-                <img src="https://img.daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.webp" class="w-full" />
+                <img src="https://img.daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.webp" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
               <div id="slide2" class="carousel-slide relative w-full">
-                <img src="https://img.daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.webp" class="w-full" />
+                <img src="https://img.daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.webp" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
               <div id="slide3" class="carousel-slide relative w-full">
-                <img src="https://img.daisyui.com/images/stock/photo-1414694762283-acccc27bca85.webp" class="w-full" />
+                <img src="https://img.daisyui.com/images/stock/photo-1414694762283-acccc27bca85.webp" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
               <div id="slide4" class="carousel-slide relative w-full">
-                <img src="https://img.daisyui.com/images/stock/photo-1665553365602-b2fb8e5d1707.webp" class="w-full" />
+                <img src="https://img.daisyui.com/images/stock/photo-1665553365602-b2fb8e5d1707.webp" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
 
               <!-- 左右按钮 -->
               <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between pointer-events-none z-10">
-                <button @click="prevSlide" class="btn btn-circle pointer-events-auto">❮</button>
-                <button @click="nextSlide" class="btn btn-circle pointer-events-auto">❯</button>
+                <button @click="prevSlide" class="btn btn-circle bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:scale-110 transition-all duration-200 pointer-events-auto">❮</button>
+                <button @click="nextSlide" class="btn btn-circle bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:scale-110 transition-all duration-200 pointer-events-auto">❯</button>
               </div>
 
               <!-- 指示器 -->
               <div v-if="slides.length > 0"
-                   class="absolute left-1/2 -translate-x-1/2 bottom-5 flex justify-center glass px-2 py-1 rounded z-10">
+                   class="absolute left-1/2 -translate-x-1/2 bottom-5 flex justify-center bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full z-10 border border-white/30">
                 <template v-for="(slide, index) in slides" :key="index">
                   <button
                       @click="goToSlide(index)"
                       :class="currentClass(index)"
-                      class="w-4 h-4 mx-1 rounded-full focus:outline-none cursor-pointer transition-all duration-200 hover:scale-110"
+                      class="w-3 h-3 mx-1 rounded-full focus:outline-none cursor-pointer transition-all duration-300 hover:scale-125"
                   ></button>
                 </template>
               </div>
-
             </div>
           </aside>
 
-          <!-- 右侧签到模块 - 改进版本 -->
+          <!-- 右侧签到模块 - 全新设计 -->
           <aside class="col-span-12 md:col-span-3 space-y-4">
-            <div class="card bg-base-100 shadow-md">
-              <div class="card-body items-center text-center">
-                <figure class="avatar my-2">
-                  <div class="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+            <div class="card bg-gradient-to-br from-white to-indigo-50/50 shadow-2xl border border-white/20 backdrop-blur-sm hover:shadow-3xl transition-all duration-300">
+              <div class="card-body items-center text-center p-6">
+                <figure class="avatar my-3">
+                  <div class="w-20 rounded-full ring-4 ring-indigo-200 ring-offset-4 ring-offset-white hover:ring-indigo-300 transition-all duration-300 hover:scale-105">
                     <img :src="userStore.userimgUrl || 'https://picsum.photos/200'" alt="用户头像" />
                   </div>
                 </figure>
-                <h2 class="card-title">{{ userStore.username || '游客' }}</h2>
-                <p class="text-sm opacity-70">
-                  {{ hasSigned ? '今天已签到 ✅' : '今天还未签到 📝' }}
-                </p>
+                <h2 class="card-title text-gray-800 text-lg font-bold">{{ userStore.username || '游客' }}</h2>
+                <div class="badge badge-lg" :class="hasSigned ? 'badge-success' : 'badge-warning'">
+                  {{ hasSigned ? '✅ 今日已签' : '📝 待签到' }}
+                </div>
+
                 <!-- 签到统计信息 -->
-                <div class="stats stats-vertical shadow mt-2 w-full">
-                  <div class="stat py-2">
-                    <div class="stat-title text-xs">连续签到</div>
-                    <div class="stat-value text-lg">{{ signInStats.consecutive }}天</div>
+                <div class="stats stats-vertical shadow-lg mt-4 w-full bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-100">
+                  <div class="stat py-3">
+                    <div class="stat-figure text-indigo-500">
+                      <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <span class="text-sm">🔥</span>
+                      </div>
+                    </div>
+                    <div class="stat-title text-xs text-gray-600">连续签到</div>
+                    <div class="stat-value text-2xl text-indigo-600 font-bold">{{ signInStats.consecutive }}</div>
+                    <div class="stat-desc text-gray-500">天</div>
                   </div>
-                  <div class="stat py-2">
-                    <div class="stat-title text-xs">累计签到</div>
-                    <div class="stat-value text-lg">{{ signInStats.total }}天</div>
+                  <div class="stat py-3">
+                    <div class="stat-figure text-emerald-500">
+                      <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <span class="text-sm">📊</span>
+                      </div>
+                    </div>
+                    <div class="stat-title text-xs text-gray-600">累计签到</div>
+                    <div class="stat-value text-2xl text-emerald-600 font-bold">{{ signInStats.total }}</div>
+                    <div class="stat-desc text-gray-500">天</div>
                   </div>
                 </div>
-                <div class="card-actions mt-4 w-full">
+
+                <div class="card-actions mt-6 w-full">
                   <button
-                      class="btn btn-success btn-sm w-full"
-                      :class="{ 'btn-disabled': hasSigned, 'loading': isSigningIn }"
+                      class="btn w-full rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      :class="{
+                        'btn-disabled bg-gray-200': hasSigned,
+                        'loading': isSigningIn,
+                        'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:scale-105': !hasSigned && !isSigningIn
+                      }"
                       :disabled="hasSigned || isSigningIn"
                       @click="performSignIn"
                   >
                     {{ isSigningIn ? '签到中...' : (hasSigned ? '✅ 已签到' : '📝 每日签到') }}
                   </button>
                 </div>
+
                 <!-- 签到奖励提示 -->
-                <div v-if="!hasSigned" class="text-xs opacity-60 mt-2">
-                  签到获得积分 +10
+                <div v-if="!hasSigned" class="alert alert-info mt-4 py-2 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                  <div class="flex items-center justify-center text-sm">
+                    <span class="mr-2">🎁</span>
+                    <span class="text-blue-700">签到获得积分 <strong>+10</strong></span>
+                  </div>
                 </div>
               </div>
             </div>
           </aside>
         </section>
 
-        <!-- 👇 功能模块 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="i in 3" :key="i" class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow">
-            <div class="card-body">
-              <h2 class="card-title">模块 {{ i }}</h2>
-              <p>描述说明文字...</p>
+        <!-- 👇 功能模块 - 全新卡片设计 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="(module, i) in modules" :key="i"
+               class="card bg-gradient-to-br from-white to-gray-50/50 shadow-xl border border-white/20 hover:shadow-2xl hover:scale-105 transition-all duration-300 group overflow-hidden">
+            <div class="card-body relative">
+              <!-- 装饰性背景 -->
+              <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br opacity-10 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"
+                   :class="module.bgColor"></div>
+
+              <div class="flex items-center mb-3">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mr-4 shadow-lg"
+                     :class="module.iconBg">
+                  {{ module.icon }}
+                </div>
+                <h2 class="card-title text-gray-800 group-hover:text-indigo-600 transition-colors duration-200">{{ module.title }}</h2>
+              </div>
+
+              <p class="text-gray-600 mb-4 leading-relaxed">{{ module.description }}</p>
+
               <div class="card-actions justify-end">
-                <button class="btn btn-primary btn-sm">前往</button>
+                <button class="btn btn-sm rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                        :class="module.buttonClass">
+                  <span class="mr-1">{{ module.buttonIcon }}</span>
+                  前往
+                </button>
               </div>
             </div>
           </div>
@@ -161,21 +209,58 @@
     <!-- 👇 侧边抽屉菜单 -->
     <div class="drawer-side">
       <label for="my-drawer-2" class="drawer-overlay"></label>
-      <ul class="menu p-4 w-80 bg-base-100 text-base-content">
-        <li><a>Sidebar Item 1</a></li>
-        <li><a>Sidebar Item 2</a></li>
+      <ul class="menu p-6 w-80 bg-white/95 backdrop-blur-sm text-gray-700 border-r border-gray-200">
+        <div class="mb-6 px-4">
+          <h3 class="text-lg font-bold text-gray-800 mb-2">导航菜单</h3>
+          <div class="w-12 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
+        </div>
+        <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200 py-3">🏠 首页</a></li>
+        <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200 py-3">📊 数据统计</a></li>
+        <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200 py-3">⚙️ 系统设置</a></li>
+        <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200 py-3">❓ 帮助支持</a></li>
       </ul>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, nextTick, ref } from 'vue'
+import { onMounted, nextTick, ref, computed } from 'vue'
 import { useUserStore } from '../../stores/user'
 import { useCarousel } from '../../composables/useCarousel'
 import { useHomeProcess } from '../../process/home/HomeProcess'
 
 const userStore = useUserStore()
+
+// 功能模块数据
+const modules = ref([
+  {
+    title: '学习管理',
+    description: '记录和管理你的学习进度，制定学习计划，追踪知识点掌握情况。',
+    icon: '📚',
+    iconBg: 'bg-gradient-to-br from-blue-100 to-indigo-100',
+    bgColor: 'from-blue-500 to-indigo-500',
+    buttonClass: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700',
+    buttonIcon: '📖'
+  },
+  {
+    title: '目标追踪',
+    description: '设定个人目标，追踪完成进度，让每一天的努力都有迹可循。',
+    icon: '🎯',
+    iconBg: 'bg-gradient-to-br from-emerald-100 to-green-100',
+    bgColor: 'from-emerald-500 to-green-500',
+    buttonClass: 'bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700',
+    buttonIcon: '🚀'
+  },
+  {
+    title: '数据分析',
+    description: '深入分析学习数据，发现学习模式，优化学习策略和效率。',
+    icon: '📈',
+    iconBg: 'bg-gradient-to-br from-purple-100 to-pink-100',
+    bgColor: 'from-purple-500 to-pink-500',
+    buttonClass: 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700',
+    buttonIcon: '📊'
+  }
+])
 
 // 使用轮播图逻辑
 const {
@@ -195,16 +280,16 @@ const {
   alertMessage,
   hasSigned,
   handleSignIn,
-  closeAlert,     // 关闭警告方法
-  pauseAutoHide,  // 暂停自动消失
-  resumeAutoHide  // 恢复自动消失
+  closeAlert,
+  pauseAutoHide,
+  resumeAutoHide
 } = useHomeProcess()
 
 // 签到相关状态
 const isSigningIn = ref(false)
 const signInStats = ref({
-  consecutive: 0,  // 连续签到天数
-  total: 0        // 累计签到天数
+  consecutive: 0,
+  total: 0
 })
 
 // 执行签到操作
@@ -213,10 +298,8 @@ async function performSignIn() {
 
   isSigningIn.value = true
   try {
-    // 调用签到方法，传入用户ID
     await handleSignIn(userStore.userid || userStore.username)
 
-    // 签到成功后更新统计数据
     if (hasSigned.value) {
       signInStats.value.consecutive += 1
       signInStats.value.total += 1
@@ -231,11 +314,6 @@ async function performSignIn() {
 // 获取签到统计数据
 async function loadSignInStats() {
   try {
-    // 这里可以调用API获取签到统计
-    // const response = await axios.get(`/api/signin/stats?userid=${userStore.userid}`)
-    // signInStats.value = response.data
-
-    // 模拟数据
     signInStats.value = {
       consecutive: 5,
       total: 28
@@ -248,28 +326,89 @@ async function loadSignInStats() {
 onMounted(async () => {
   await nextTick()
   checkForSlides()
-  await loadSignInStats()  // 加载签到统计数据
+  await loadSignInStats()
 })
 </script>
 
 <style scoped>
-/* 警告框入场动画 */
-@keyframes bounce-in {
+/* 警告框动画优化 */
+@keyframes slide-down {
   0% {
-    transform: translate(-50%, -20px);
+    top: -100px;
     opacity: 0;
+    transform: translateX(-50%) scale(0.9);
   }
   50% {
-    transform: translate(-50%, 5px);
+    top: 70px;
     opacity: 0.8;
+    transform: translateX(-50%) scale(1.05);
   }
   100% {
-    transform: translate(-50%, 0);
+    top: 80px;
     opacity: 1;
+    transform: translateX(-50%) scale(1);
   }
 }
 
-.animate-bounce-in {
-  animation: bounce-in 0.5s ease-out;
+.animate-slide-down {
+  animation: slide-down 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.alert-top-fixed {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 28rem;
+  margin: 0 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-radius: 1rem;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4f46e5, #7c3aed);
+}
+
+/* 轮播图指示器样式 */
+.carousel-slide .w-3.h-3 {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.carousel-slide .w-3.h-3.bg-white {
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 卡片悬浮效果 */
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* 按钮悬浮效果 */
+.btn:hover:not(.btn-disabled) {
+  transform: translateY(-1px);
+}
+
+/* 头像悬浮效果 */
+.avatar:hover {
+  transform: scale(1.05);
 }
 </style>
