@@ -5,7 +5,7 @@
     <div class="drawer-content flex flex-col">
 
       <!-- 👇 顶部导航栏 - 使用渐变和毛玻璃效果 -->
-      <header class="navbar bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-xl backdrop-blur-sm border-b border-white/10">
+      <header class="navbar bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-xl backdrop-blur-sm border-b border-white/10 z-[9999]">
         <div class="flex-1">
           <a class="btn btn-ghost normal-case text-xl font-bold text-white hover:bg-white/10 transition-all duration-300">
             <span class="text-2xl mr-2">📘</span> 日积月累
@@ -35,8 +35,8 @@
                 tabindex="0"
                 class="menu menu-compact dropdown-content mt-3 p-2 shadow-2xl bg-white/95 backdrop-blur-sm rounded-2xl w-52 border border-gray-100"
             >
-              <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200">👤 我的资料</a></li>
-              <li><a class="hover:bg-indigo-50 rounded-lg transition-colors duration-200">⚙️ 设置</a></li>
+              <li><a class="hover:bg-indigo-50 text-black rounded-lg transition-colors duration-200">👤 我的资料</a></li>
+              <li><a class="hover:bg-indigo-50 text-black rounded-lg transition-colors duration-200">⚙️ 设置</a></li>
               <li><a class="hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200">🚪 退出登录</a></li>
             </ul>
           </div>
@@ -113,15 +113,23 @@
           <aside class="col-span-12 md:col-span-3 space-y-4">
             <div class="card bg-gradient-to-br from-white to-indigo-50/50 shadow-2xl border border-white/20 backdrop-blur-sm hover:shadow-3xl transition-all duration-300">
               <div class="card-body items-center text-center p-6">
-                <figure class="avatar my-3">
-                  <div class="w-20 rounded-full ring-4 ring-indigo-200 ring-offset-4 ring-offset-white hover:ring-indigo-300 transition-all duration-300 hover:scale-105">
-                    <img :src="userStore.userimgUrl || 'https://picsum.photos/200'" alt="用户头像" />
+
+                <!-- 优化后的头像区域 -->
+                <div class="avatar indicator mb-4">
+                  <div class="w-24 h-24 rounded-full ring-4 ring-primary ring-offset-4 ring-offset-base-100 hover:ring-secondary transition-all duration-500 hover:scale-110 shadow-xl hover:shadow-2xl">
+                    <img
+                        :src="userStore.userimgUrl || 'https://picsum.photos/200'"
+                        alt="用户头像"
+                        class="rounded-full object-cover w-full h-full hover:brightness-110 transition-all duration-300"
+                        @error="handleImageError"
+                    />
                   </div>
-                </figure>
-                <h2 class="card-title text-gray-800 text-lg font-bold">{{ userStore.username || '游客' }}</h2>
-                <div class="badge badge-lg" :class="hasSigned ? 'badge-success' : 'badge-warning'">
-                  {{ hasSigned ? '✅ 今日已签' : '📝 待签到' }}
                 </div>
+
+                <!-- 用户名 - 增加悬停效果 -->
+                <h2 class="card-title text-gray-800 text-xl font-bold mb-3 hover:text-primary transition-colors duration-200 cursor-pointer">
+                  {{ userStore.username || '游客' }}
+                </h2>
 
                 <!-- 签到统计信息 -->
                 <div class="stats stats-vertical shadow-lg mt-4 w-full bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-100">
@@ -152,13 +160,17 @@
                       class="btn w-full rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
                       :class="{
                         'btn-disabled bg-gray-200': hasSigned,
-                        'loading': isSigningIn,
                         'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:scale-105': !hasSigned && !isSigningIn
                       }"
                       :disabled="hasSigned || isSigningIn"
-                      @click="performSignIn"
+                      @click="handleSignIn(userStore.userid)"
                   >
-                    {{ isSigningIn ? '签到中...' : (hasSigned ? '✅ 已签到' : '📝 每日签到') }}
+                    <span  :class="{
+                      'loading': isSigningIn,
+                      'loading-spinner': isSigningIn
+                    }">
+                      {{ isSigningIn ? '签到中...' : (hasSigned ? '✅ 已签到' : '📝 每日签到') }}
+                    </span>
                   </button>
                 </div>
 
@@ -279,54 +291,22 @@ const {
   alertType,
   alertMessage,
   hasSigned,
+  isSigningIn,
+  signInStats,
   handleSignIn,
   closeAlert,
   pauseAutoHide,
-  resumeAutoHide
+  resumeAutoHide,
+  getSigningInInfo,
+  handleImageError
 } = useHomeProcess()
 
-// 签到相关状态
-const isSigningIn = ref(false)
-const signInStats = ref({
-  consecutive: 0,
-  total: 0
-})
 
-// 执行签到操作
-async function performSignIn() {
-  if (hasSigned.value || isSigningIn.value) return
-
-  isSigningIn.value = true
-  try {
-    await handleSignIn(userStore.userid || userStore.username)
-
-    if (hasSigned.value) {
-      signInStats.value.consecutive += 1
-      signInStats.value.total += 1
-    }
-  } catch (error) {
-    console.error('签到失败:', error)
-  } finally {
-    isSigningIn.value = false
-  }
-}
-
-// 获取签到统计数据
-async function loadSignInStats() {
-  try {
-    signInStats.value = {
-      consecutive: 5,
-      total: 28
-    }
-  } catch (error) {
-    console.error('获取签到统计失败:', error)
-  }
-}
 
 onMounted(async () => {
   await nextTick()
   checkForSlides()
-  await loadSignInStats()
+  await getSigningInInfo(userStore.userid)
 })
 </script>
 
@@ -407,8 +387,25 @@ onMounted(async () => {
   transform: translateY(-1px);
 }
 
-/* 头像悬浮效果 */
-.avatar:hover {
-  transform: scale(1.05);
+/* 头像悬浮效果增强 */
+.avatar .w-24:hover {
+  transform: scale(1.1) rotate(2deg);
+}
+
+/* 状态指示器动画 */
+.indicator-item .animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 徽章悬浮效果 */
+.badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 统计卡片悬浮效果 */
+.stats:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 </style>

@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import {useRouter} from "vue-router";
 
 import axios from 'axios'
+import {useUserStore} from "../../stores/user.ts";
 
+const userStore = useUserStore()
 export function useLoginForm() {
     const router = useRouter()
 
@@ -17,6 +19,8 @@ export function useLoginForm() {
     const alertType = ref<'alert-warning' | 'alert-success' | 'alert-danger'>('alert-warning')
     const alertMessage = ref('Warning: Invalid email address!')
     const loading = ref(false) // <- 加载状态
+    const showPassword = ref(false)
+
     const handleSubmit = async () => {
         if (loading.value) return // 防止重复提交
 
@@ -38,18 +42,21 @@ export function useLoginForm() {
                 const ret = res.data;
 
                 if(ret.retCode=="0000"){
-                    if (ret.retValue) {
-                        alertType.value = 'alert-success'
-                        alertMessage.value = '成功: 登陆成功,即将跳转到首页!'
-                        showAlert.value = true
 
-                        router.push({ name: 'Home' })
+                    const userinfo = ret.retValue;
 
-                    } else {
-                        alertType.value = 'alert-warning'
-                        alertMessage.value = '错误: 用户名或密码不正确!'
-                        showAlert.value = true
-                    }
+                    userStore.setUserid(userinfo.user_id)
+                    userStore.setUsername(userinfo.user_name)
+
+                    alertType.value = 'alert-success'
+                    alertMessage.value = '成功: 登陆成功,即将跳转到首页!'
+                    showAlert.value = true
+
+                    router.push({ name: 'Home' })
+                }else if(ret.retCode=="2222"){
+                    alertType.value = 'alert-warning'
+                    alertMessage.value = '错误: 用户名或密码不正确!'
+                    showAlert.value = true
                 }else{
                     alertType.value = 'alert-warning'
                     alertMessage.value = '错误: 后台发生异常，请稍后再试!'
@@ -81,6 +88,7 @@ export function useLoginForm() {
 
     return {
         isLogin,
+        showPassword,
         username,
         password,
         confirmPassword,

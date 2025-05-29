@@ -1,16 +1,53 @@
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import axios from 'axios'
+import {useUserStore} from "../../stores/user.ts";
+
+const userStore = useUserStore()
 
 export function useHomeProcess() {
     const showAlert = ref(false)
     const alertType = ref<'alert-warning' | 'alert-success' | 'alert-danger'>('alert-warning')
     const alertMessage = ref('Warning: Invalid email address!')
     const hasSigned = ref(false)
-    const router = useRouter()  // 修复1: 添加 router 导入和初始化
-    let alertTimer: NodeJS.Timeout | null = null  // 用于存储定时器
+    let alertTimer: ReturnType<typeof setTimeout> | null = null  // 用于存储定时器
     let remainingTime = 2000  // 剩余时间
     let startTime = 0  // 开始时间
+
+    const isSigningIn = ref(false)
+    const signInStats = ref({
+        consecutive: 0,
+        total: 0
+    })
+
+
+    async function getSigningInInfo(userid?: string){
+        try {
+            console.log('查询签到信息')
+
+            if (!userid) {
+                showAlertWithAutoHide('alert-warning', '错误: 用户ID不能为空!')
+                return
+            }
+            isSigningIn.value = true
+
+            const res = await axios.get(`/api/account/auth/getSignInInfo?userid=${userid}`)
+            const ret = res.data
+
+            if (ret.retCode === "0000") {
+                const map = ret.retValue
+                signInStats.value.consecutive = map.consecutiveSignInDays
+                signInStats.value.total = map.signInCount
+                hasSigned.value = map.isSigned
+            } else {
+                showAlertWithAutoHide('alert-danger', `错误: ${ret.retDesc || '后台发生异常，请稍后再试!'}`)
+            }
+        } catch (error) {
+            console.error('签到信息获取请求失败:', error)
+            showAlertWithAutoHide('alert-danger', '错误: 网络异常，请检查网络连接!')
+        } finally {
+            isSigningIn.value = false
+        }
+    }
 
     // 显示警告并设置自动消失
     function showAlertWithAutoHide(type: 'alert-warning' | 'alert-success' | 'alert-danger', message: string) {
@@ -60,34 +97,37 @@ export function useHomeProcess() {
         try {
             console.log('用户签到')
 
-            // 修复3: 检查 userid 是否存在
             if (!userid) {
                 showAlertWithAutoHide('alert-warning', '错误: 用户ID不能为空!')
                 return
             }
 
-            // 修复4: 正确传递 userid 参数
-            const res = await axios.get(`/api/account/auth/signIn?userid=${userid}`)
+            isSigningIn.value = true
+
+            const res = await axios.post('/api/account/auth/signIn', userid, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
             const ret = res.data
 
-            if (ret.retCode === "0000") {  // 修复5: 使用严格相等比较
+            if (ret.retCode === "0000") {
                 if (ret.retValue) {
                     showAlertWithAutoHide('alert-success', '成功: 签到成功!')
-                    hasSigned.value = true  // 修复6: 只有成功时才设置已签到
+                    hasSigned.value = true
 
-                    // 可选: 延迟跳转，让用户看到成功消息
-                    setTimeout(() => {
-                        router.push({ name: 'Home' })
-                    }, 1500)
                 } else {
-                    showAlertWithAutoHide('alert-danger', '错误: 签到失败!')
+                    showAlertWithAutoHide('alert-danger', '失败: 今日已签到!')
+                    hasSigned.value = true
                 }
             } else {
                 showAlertWithAutoHide('alert-danger', `错误: ${ret.retDesc || '后台发生异常，请稍后再试!'}`)
             }
-        } catch (error) {  // 修复9: 添加异常处理
+        } catch (error) {
             console.error('签到请求失败:', error)
             showAlertWithAutoHide('alert-danger', '错误: 网络异常，请检查网络连接!')
+        } finally {
+            isSigningIn.value = false
         }
     }
 
@@ -100,14 +140,23 @@ export function useHomeProcess() {
         showAlert.value = false
     }
 
+    const handleImageError = (event) => {
+        // 头像加载失败时的处理
+        event.target.src = `https://via.placeholder.com/200x200/6366f1/white?text=${encodeURIComponent((userStore.username || '游客').charAt(0))}`;
+    };
+
     return {
         showAlert,
         alertType,
         alertMessage,
         hasSigned,
+        isSigningIn,
+        signInStats,
         handleSignIn,  // 确保返回 handleSignIn 方法
         closeAlert,    // 返回关闭警告的方法
         pauseAutoHide, // 暂停自动消失
-        resumeAutoHide // 恢复自动消失
+        resumeAutoHide, // 恢复自动消失
+        getSigningInInfo,
+        handleImageError
     }
 }

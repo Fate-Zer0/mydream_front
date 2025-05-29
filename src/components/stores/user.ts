@@ -18,6 +18,15 @@ export const useUserStore = defineStore('user', {
             this.userid = userid;
             this.username = username;
             this.userimgUrl = userimgUrl;
+        },
+        setUserid(userid: string) {
+            this.userid = userid;
+        },
+        setUsername(username: string) {
+            this.username = username;
+        },
+        setUserimgUrl(userimgUrl: string) {
+            this.userimgUrl = userimgUrl;
         }
     }
 });
