@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import {useRouter} from "vue-router";
 
 import axios from 'axios'
-import {useUserStore} from "../../stores/user.ts";
+import {useUserStore} from "../../stores/user";
 
 const userStore = useUserStore()
 export function useLoginForm() {
