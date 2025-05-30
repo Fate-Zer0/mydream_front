@@ -1,8 +1,8 @@
 import { ref } from "vue";
 import axios from "axios";
-import { useUserStore } from "../../stores/user.ts";
+import { useUserStore } from "../../stores/user";
 import { useRouter } from "vue-router";
-import { useAlertStore } from "../../stores/alert.ts";
+import { useAlertStore } from "../../stores/alert";
 
 export function useHomeProcess() {
 	const hasSigned = ref(false);
