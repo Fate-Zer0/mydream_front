@@ -49,6 +49,12 @@ export function useLoginForm() {
                     userStore.setUserid(userinfo.user_id)
                     userStore.setUsername(userinfo.user_name)
 
+                    // 同步写入 localStorage
+                    localStorage.setItem('user', JSON.stringify({
+                        id: userinfo.user_id,
+                        name: userinfo.user_name
+                    }))
+
                     alertType.value = 'alert-success'
                     alertMessage.value = '成功: 登陆成功,即将跳转到首页!'
                     showAlert.value = true
