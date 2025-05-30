@@ -1,8 +1,5 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import {useUserStore} from "../../stores/user.ts";
-
-const userStore = useUserStore()
 
 export function useHomeProcess() {
     const showAlert = ref(false)
@@ -140,11 +137,6 @@ export function useHomeProcess() {
         showAlert.value = false
     }
 
-    const handleImageError = (event) => {
-        // 头像加载失败时的处理
-        event.target.src = `https://via.placeholder.com/200x200/6366f1/white?text=${encodeURIComponent((userStore.username || '游客').charAt(0))}`;
-    };
-
     return {
         showAlert,
         alertType,
@@ -156,7 +148,6 @@ export function useHomeProcess() {
         closeAlert,    // 返回关闭警告的方法
         pauseAutoHide, // 暂停自动消失
         resumeAutoHide, // 恢复自动消失
-        getSigningInInfo,
-        handleImageError
+        getSigningInInfo
     }
 }

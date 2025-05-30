@@ -121,7 +121,6 @@
                         :src="userStore.userimgUrl || 'https://picsum.photos/200'"
                         alt="用户头像"
                         class="rounded-full object-cover w-full h-full hover:brightness-110 transition-all duration-300"
-                        @error="handleImageError"
                     />
                   </div>
                 </div>
@@ -297,8 +296,7 @@ const {
   closeAlert,
   pauseAutoHide,
   resumeAutoHide,
-  getSigningInInfo,
-  handleImageError
+  getSigningInInfo
 } = useHomeProcess()
 
 
