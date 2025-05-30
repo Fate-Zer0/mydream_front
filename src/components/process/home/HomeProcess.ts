@@ -113,6 +113,7 @@ export function useHomeProcess() {
                     showAlertWithAutoHide('alert-success', '成功: 签到成功!')
                     hasSigned.value = true
 
+                    getSigningInInfo(userid);
                 } else {
                     showAlertWithAutoHide('alert-danger', '失败: 今日已签到!')
                     hasSigned.value = true

@@ -20,6 +20,7 @@ export function useLoginForm() {
     const alertMessage = ref('Warning: Invalid email address!')
     const loading = ref(false) // <- 加载状态
     const showPassword = ref(false)
+    const showConfirmPassword = ref(false)
 
     const handleSubmit = async () => {
         if (loading.value) return // 防止重复提交
@@ -89,6 +90,7 @@ export function useLoginForm() {
     return {
         isLogin,
         showPassword,
+        showConfirmPassword,
         username,
         password,
         confirmPassword,
