@@ -1,5 +1,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
+import {useUserStore} from "../../stores/user.ts";
+import {useRouter} from "vue-router";
 
 export function useHomeProcess() {
     const showAlert = ref(false)
@@ -9,6 +11,8 @@ export function useHomeProcess() {
     let alertTimer: ReturnType<typeof setTimeout> | null = null  // 用于存储定时器
     let remainingTime = 2000  // 剩余时间
     let startTime = 0  // 开始时间
+
+    const router = useRouter()
 
     const isSigningIn = ref(false)
     const signInStats = ref({
@@ -44,6 +48,18 @@ export function useHomeProcess() {
         } finally {
             isSigningIn.value = false
         }
+    }
+
+    //退出登录
+    function logout() {
+        localStorage.removeItem('user')
+
+        const userStore = useUserStore()
+        userStore.setUserid("")
+        userStore.setUsername("")
+
+        // 3. 跳转到登录页
+        router.push({ name: 'Login' })
     }
 
     // 显示警告并设置自动消失
@@ -149,6 +165,7 @@ export function useHomeProcess() {
         closeAlert,    // 返回关闭警告的方法
         pauseAutoHide, // 暂停自动消失
         resumeAutoHide, // 恢复自动消失
+        logout,
         getSigningInInfo
     }
 }

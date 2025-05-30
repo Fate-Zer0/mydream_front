@@ -37,7 +37,7 @@
             >
               <li><a class="hover:bg-indigo-50 text-black rounded-lg transition-colors duration-200">👤 我的资料</a></li>
               <li><a class="hover:bg-indigo-50 text-black rounded-lg transition-colors duration-200">⚙️ 设置</a></li>
-              <li><a class="hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200">🚪 退出登录</a></li>
+              <li><a class="hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200" @click="logout">🚪 退出登录</a></li>
             </ul>
           </div>
         </div>
@@ -296,6 +296,7 @@ const {
   closeAlert,
   pauseAutoHide,
   resumeAutoHide,
+  logout,
   getSigningInInfo
 } = useHomeProcess()
 
