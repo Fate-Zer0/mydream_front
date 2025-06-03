@@ -48,6 +48,8 @@ export function useLoginForm() {
 
                     userStore.setUserid(userinfo.user_id)
                     userStore.setUsername(userinfo.user_name)
+                    userStore.setUserimgUrl("/file"+userinfo.user_img.file_path + userinfo.user_img.file_name)
+                    // userStore.setUserimgUrl("http://localhost:8085/userimg/100001/1736065299484.jpg")
 
                     if(rememberMe.value){
                         localStorage.setItem('user', JSON.stringify({

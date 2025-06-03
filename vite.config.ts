@@ -11,6 +11,19 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://162.14.82.204:8085',
+      '/file': {
+        target: 'http://162.14.82.204:8085',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/file/, '') // 去掉 /file 前缀
+      },
+      // '/api': 'http://localhost:8085',
+      // '/file': {
+      //   target: 'http://localhost:8085',
+      //   changeOrigin: true,
+      //   secure: false,
+      //   rewrite: (path) => path.replace(/^\/file/, '') // 去掉 /file 前缀
+      // }
     },
   },
 })

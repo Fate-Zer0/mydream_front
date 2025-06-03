@@ -45,8 +45,11 @@
 								class="w-10 rounded-full ring-2 ring-white/30 transition-all duration-200 hover:ring-white/50"
 							>
 								<img
-									src="https://picsum.photos/200"
-									alt="用户头像"
+                    :src="
+												userStore.userimgUrl ||
+												'https://picsum.photos/200'
+											"
+									  alt="用户头像"
 								/>
 							</div>
 						</label>
