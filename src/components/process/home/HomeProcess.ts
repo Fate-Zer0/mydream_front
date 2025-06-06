@@ -28,7 +28,7 @@ export function useHomeProcess() {
 			}
 			isSigningIn.value = true;
 			const res = await axios.get(
-				`/api/account/auth/getSignInInfo?userid=${userid}`,
+				`/api/account/user/getSignInInfo?userid=${userid}`,
 			);
 			const ret = res.data;
 
@@ -78,7 +78,7 @@ export function useHomeProcess() {
 				return;
 			}
 			isSigningIn.value = true;
-			const res = await axios.post("/api/account/auth/signIn", userid, {
+			const res = await axios.post("/api/account/user/signIn", userid, {
 				headers: {
 					"Content-Type": "application/json",
 				},
