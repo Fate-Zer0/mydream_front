@@ -65,12 +65,8 @@ const pauseAutoHide = computed(() => alert.pauseAutoHide);
 const resumeAutoHide = computed(() => alert.resumeAutoHide);
 const closeAlert = computed(() => alert.closeAlert);
 
-const savedUser = localStorage.getItem("user");
-if (savedUser) {
-	const user = JSON.parse(savedUser);
-	userStore.setUserid(user.id);
-	userStore.setUsername(user.name);
-}
+userStore.getLocalUser();
+
 router.beforeEach((to, from, next) => {
 	switch (to.name) {
 		case "Login":
