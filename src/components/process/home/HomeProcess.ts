@@ -28,7 +28,7 @@ export function useHomeProcess() {
 			}
 			isSigningIn.value = true;
 			const res = await axios.get(
-				`/api/account/user/getSignInInfo?userid=${userid}`,
+				`/api/account/user/getSignInInfo?user_id=${userid}`,
 			);
 			const ret = res.data;
 
