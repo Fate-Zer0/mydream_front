@@ -12,6 +12,7 @@ export function useHomeProcess() {
 	const isSigningIn = ref(false);
 	const signInStats = ref({
 		consecutive: 0,
+		maxConsecutive: 0,
 		total: 0,
 	});
 
@@ -35,6 +36,7 @@ export function useHomeProcess() {
 			if (ret.retCode === "0000") {
 				const map = ret.retValue;
 				signInStats.value.consecutive = map.consecutiveSignInDays;
+				signInStats.value.maxConsecutive = map.maxConsecutiveSignInDays;
 				signInStats.value.total = map.signInCount;
 				hasSigned.value = map.isSigned;
 			} else {
@@ -65,11 +67,12 @@ export function useHomeProcess() {
 		// 3. 跳转到登录页
 		router.push({ name: "Login" });
 	}
-	async function handleSignIn(userid?: string) {
+	async function handleSignIn() {
 		// 修复2: 添加 userid 参数
 		try {
 			console.log("用户签到");
-
+			const userStore = useUserStore();
+			const userid = userStore.userid;
 			if (!userid) {
 				useAlertStore().showAlertWithAutoHide(
 					"alert-warning",

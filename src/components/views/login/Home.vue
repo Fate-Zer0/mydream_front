@@ -184,7 +184,52 @@
 						<div
 							class="card hover:shadow-3xl border border-white/20 bg-gradient-to-br from-white to-indigo-50/50 shadow-2xl backdrop-blur-sm transition-all duration-300"
 						>
-							<div class="card-body items-center p-6 text-center">
+              <!-- 美化的日历弹窗 -->
+              <Transition name="calendar-fade">
+                <div
+                    v-if="showCalendar"
+                    class="absolute bottom-full mb-4 z-[9999] pointer-events-auto"
+                    style="top: -10px;left: 15px"
+                    @mouseenter="cancelHideCalendar"
+                    @mouseleave="hideCalendarWithDelay"
+                >
+                  <!-- 弹窗容器 -->
+                  <div class="relative bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 w-80 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+                    <!-- 弹窗箭头 -->
+                    <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white dark:bg-gray-800 border-b border-r border-gray-200 dark:border-gray-700 rotate-45"></div>
+
+                    <!-- 弹窗标题 -->
+                    <div class="flex items-center justify-between mb-4">
+                      <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                        📅 签到日历
+                      </h3>
+                      <button
+                          @click="showCalendar = false"
+                          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- 分割线 -->
+                    <div class="border-t border-gray-200 dark:border-gray-600 mb-4"></div>
+
+                    <!-- 日历组件 -->
+                    <Calendar
+                        :signed-dates="signedDates"
+                        v-model:selected-date="selectedDate"
+                        :show-stats="true"
+                        :clickable="true"
+                        @date-click="handleDateClick"
+                        @month-change="handleMonthChange"
+                    />
+                  </div>
+                </div>
+              </Transition>
+
+              <div class="card-body items-center p-6 text-center relative">
 								<!-- 优化后的头像区域 -->
 								<div class="avatar indicator mb-4">
 									<div
@@ -262,7 +307,11 @@
 									</div>
 								</div>
 
-								<div class="card-actions mt-6 w-full">
+								<div
+                    class="card-actions mt-6 w-full"
+                    @mouseenter="cancelHideCalendar"
+                    @mouseleave="hideCalendarWithDelay"
+                >
 									<button
 										class="btn w-full rounded-2xl font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
 										:class="{
@@ -272,8 +321,8 @@
 												!hasSigned && !isSigningIn,
 										}"
 										:disabled="hasSigned || isSigningIn"
-										@click="handleSignIn(userStore.userid)"
-									>
+										@click="handleSignInAndRefresh()"
+                  >
 										<span
 											:class="{
 												loading: isSigningIn,
@@ -406,10 +455,12 @@
 </template>
 
 <script setup>
-import { onMounted, nextTick, ref, computed } from "vue";
+import { onMounted, nextTick, ref, onBeforeUnmount , computed } from "vue";
 import { useUserStore } from "../../stores/user";
 import { useCarousel } from "../../composables/useCarousel";
 import { useHomeProcess } from "../../process/home/HomeProcess";
+import { signInInfoCalendar } from "../../composables/signInInfoCalendar";
+import Calendar from "../component/signInInfoCalendar.vue";
 
 const userStore = useUserStore();
 
@@ -448,6 +499,16 @@ const modules = ref([
 	},
 ]);
 
+async function handleSignInAndRefresh() {
+  try {
+    await handleSignIn();     // 等待签到完成
+    await initSignInfo();     // 等待刷新完成
+  } catch (error) {
+    console.error('执行失败:', error);
+    // 可以弹出提示错误给用户
+  }
+}
+
 // 使用轮播图逻辑
 const {
 	slides,
@@ -467,6 +528,18 @@ const {
 	logout,
 	getSigningInInfo,
 } = useHomeProcess();
+
+const {
+  showCalendar,
+  hideTimer,
+  selectedDate,
+  signedDates,
+  handleDateClick,
+  handleMonthChange,
+  cancelHideCalendar,
+  hideCalendarWithDelay,
+  initSignInfo
+} = signInInfoCalendar();
 
 onMounted(async () => {
 	await nextTick();
@@ -572,5 +645,64 @@ onMounted(async () => {
 .stats:hover {
 	transform: translateY(-2px);
 	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 弹窗动画 */
+.calendar-fade-enter-active,
+.calendar-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.calendar-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px)  scale(0.95);
+}
+
+.calendar-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px)  scale(0.95);
+}
+
+.calendar-fade-enter-to,
+.calendar-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0)  scale(1);
+}
+
+/* 确保弹窗在最顶层 */
+.z-\[9999\] {
+  z-index: 9999;
+}
+
+/* 弹窗阴影效果 */
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* 毛玻璃效果 */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* 加载动画 */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .w-80 {
+    width: calc(100vw - 2rem);
+    max-width: 320px;
+  }
 }
 </style>
