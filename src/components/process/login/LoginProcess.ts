@@ -52,11 +52,15 @@ export function useLoginForm() {
 
 					userStore.setUserid(userinfo.user_id);
 					userStore.setUsername(userinfo.user_name);
-					userStore.setUserimgUrl(
-						"/file" +
-							userinfo.user_img.file_path +
-							userinfo.user_img.file_name,
-					);
+					if (userinfo.user_img) {
+						userStore.setUserimgUrl(
+							"/file" +
+								userinfo.user_img.file_path +
+								userinfo.user_img.file_name,
+						);
+					} else {
+						userStore.setUserimgUrl("");
+					}
 
 					if (rememberMe.value) {
 						userStore.setLocalUser();
@@ -85,18 +89,61 @@ export function useLoginForm() {
 				loading.value = false; // 结束加载
 			}
 		} else {
-			if (password.value !== confirmPassword.value) {
+			if (username.value === "") {
+				alertType.value = "alert-warning";
+				alertMessage.value = "警告: 请输入用户名!";
+				showAlert.value = true;
+				return;
+			}
+			if (
+				password.value !== confirmPassword.value &&
+				password.value !== ""
+			) {
 				alertType.value = "alert-warning";
 				alertMessage.value = "警告: 两次输入的密码不一致!";
 				showAlert.value = true;
 				return;
 			}
-
-			password.value = "";
-			isLogin.value = true;
-			alertType.value = "alert-success";
-			alertMessage.value = "成功: 注册成功,请重新输入账号密码登陆!";
-			showAlert.value = true;
+			const user = {
+				user_name: username.value,
+				user_pw: password.value,
+			};
+			try {
+				loading.value = true; // 开始加载
+				const res = await axios.post("/api/account/auth/signUp", user, {
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+				const ret = res.data;
+				switch (ret.retCode) {
+					case "0000":
+						password.value = "";
+						isLogin.value = true;
+						alertType.value = "alert-success";
+						alertMessage.value =
+							"成功: 注册成功,请重新输入账号密码登陆!";
+						showAlert.value = true;
+						break;
+					case "2222":
+						alertType.value = "alert-warning";
+						alertMessage.value = "错误: 用户已存在!";
+						showAlert.value = true;
+						break;
+					default:
+						alertType.value = "alert-warning";
+						alertMessage.value = "错误: 后台发生异常，请稍后再试!";
+						showAlert.value = true;
+						break;
+				}
+			} catch (error) {
+				console.error("Error during login:", error);
+				alertType.value = "alert-warning";
+				alertMessage.value = "错误: 发送请求异常，请稍后再试!";
+				showAlert.value = true;
+			} finally {
+				loading.value = false; // 结束加载
+			}
 		}
 	};
 
