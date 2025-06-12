@@ -27,8 +27,9 @@ export const useUserStore = defineStore("user", {
 		setUserimgUrl(userimgUrl: string) {
 			this.userimgUrl = userimgUrl;
 		},
-		getLocalUser() {
-			const savedUser = localStorage.getItem("user");
+		getStorageUser() {
+			const savedUser =
+				localStorage.getItem("user") || sessionStorage.getItem("user");
 			if (savedUser) {
 				const user = JSON.parse(savedUser);
 				this.setUserInfo(user.id, user.name, user.imgUrl);
@@ -50,6 +51,28 @@ export const useUserStore = defineStore("user", {
 					imgUrl: this.userimgUrl,
 				}),
 			);
+		},
+		setSessionUser() {
+			console.log("setSessionUser", {
+				id: this.userid,
+				name: this.username,
+				imgUrl: this.userimgUrl,
+			});
+			sessionStorage.setItem(
+				"user",
+				JSON.stringify({
+					id: this.userid,
+					name: this.username,
+					imgUrl: this.userimgUrl,
+				}),
+			);
+		},
+		logout() {
+			this.userid = "";
+			this.username = "";
+			this.userimgUrl = "";
+			localStorage.removeItem("user");
+			sessionStorage.removeItem("user");
 		},
 	},
 });

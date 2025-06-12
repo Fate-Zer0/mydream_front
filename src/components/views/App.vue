@@ -65,7 +65,7 @@ const pauseAutoHide = computed(() => alert.pauseAutoHide);
 const resumeAutoHide = computed(() => alert.resumeAutoHide);
 const closeAlert = computed(() => alert.closeAlert);
 
-userStore.getLocalUser();
+userStore.getStorageUser();
 
 router.beforeEach((to, from, next) => {
 	switch (to.name) {
