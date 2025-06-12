@@ -2,7 +2,7 @@ import { ref } from "vue";
 import { useUserStore } from "../../stores/user";
 import { useRouter } from "vue-router";
 import { useAlertStore } from "../../stores/alert";
-import {withRequest} from "../../composables/useRequest";
+import { withRequest } from "../../composables/useRequest";
 import api from "../../api/api";
 
 export function useHomeProcess() {
@@ -20,9 +20,7 @@ export function useHomeProcess() {
 	async function getSigningInInfo(userid?: string) {
 		if (!userid) return;
 		isSigningIn.value = true;
-		const res = await withRequest(() =>
-			api.user.getSignInInfo(userid)
-		);
+		const res = await withRequest(() => api.user.getSignInInfo(userid));
 		if (res?.retValue) {
 			const map = res.retValue;
 			signInStats.value.consecutive = map.consecutiveSignInDays;
@@ -35,11 +33,8 @@ export function useHomeProcess() {
 
 	//退出登录
 	function logout() {
-		localStorage.removeItem("user");
-
 		const userStore = useUserStore();
-		userStore.setUserid("");
-		userStore.setUsername("");
+		userStore.logout();
 
 		// 3. 跳转到登录页
 		router.push({ name: "Login" });
@@ -51,9 +46,7 @@ export function useHomeProcess() {
 		if (!userid) return;
 		isSigningIn.value = true;
 
-		const res = await withRequest(() =>
-			api.user.signIn(userid)
-		);
+		const res = await withRequest(() => api.user.signIn(userid));
 		if (res?.retValue) {
 			if (res.retCode === "0000") {
 				if (res.retValue) {

@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "../../stores/user";
 import { withRequest } from "../../composables/useRequest";
 import api from "../../api/api";
-import type {User} from "../../type/User";
+import type { User } from "../../type/User";
 
 const userStore = useUserStore();
 export function useLoginForm() {
@@ -28,17 +28,14 @@ export function useLoginForm() {
 		if (loading.value) return; // 防止重复提交
 
 		if (isLogin.value) {
-
-			const user : User  = {
+			const user: User = {
 				user_id: null,
 				user_name: username.value,
 				user_pw: password.value,
-				user_img: null
+				user_img: null,
 			};
 
-			const res = await withRequest(() =>
-				api.auth.chickLogin(user)
-			);
+			const res = await withRequest(() => api.auth.chickLogin(user));
 
 			if (res?.retValue) {
 				if (res.retCode == "0000") {
@@ -49,8 +46,8 @@ export function useLoginForm() {
 					if (userinfo.user_img) {
 						userStore.setUserimgUrl(
 							"/file" +
-							userinfo.user_img.file_path +
-							userinfo.user_img.file_name,
+								userinfo.user_img.file_path +
+								userinfo.user_img.file_name,
 						);
 					} else {
 						userStore.setUserimgUrl("");
@@ -58,6 +55,8 @@ export function useLoginForm() {
 
 					if (rememberMe.value) {
 						userStore.setLocalUser();
+					} else {
+						userStore.setSessionUser();
 					}
 
 					alertType.value = "alert-success";
@@ -93,17 +92,15 @@ export function useLoginForm() {
 				return;
 			}
 
-			const user : User  = {
+			const user: User = {
 				user_id: "",
 				user_name: username.value,
 				user_pw: password.value,
-				user_img: null
+				user_img: null,
 			};
 
 			loading.value = true; // 开始加载
-			const res = await withRequest(() =>
-				api.auth.signUp(user)
-			);
+			const res = await withRequest(() => api.auth.signUp(user));
 
 			if (res?.retValue) {
 				switch (res.retCode) {
