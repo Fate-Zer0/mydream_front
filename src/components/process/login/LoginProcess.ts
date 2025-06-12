@@ -1,9 +1,10 @@
 // src/composables/useLoginForm.ts
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-
-import axios from "axios";
 import { useUserStore } from "../../stores/user";
+import { withRequest } from "../../composables/useRequest";
+import api from "../../api/api";
+import type {User} from "../../type/User";
 
 const userStore = useUserStore();
 export function useLoginForm() {
@@ -27,36 +28,29 @@ export function useLoginForm() {
 		if (loading.value) return; // 防止重复提交
 
 		if (isLogin.value) {
-			const user = {
+
+			const user : User  = {
+				user_id: null,
 				user_name: username.value,
 				user_pw: password.value,
+				user_img: null
 			};
 
-			try {
-				loading.value = true; // 开始加载
+			const res = await withRequest(() =>
+				api.auth.chickLogin(user)
+			);
 
-				const res = await axios.post(
-					"/api/account/auth/chickLogin",
-					user,
-					{
-						headers: {
-							"Content-Type": "application/json",
-						},
-					},
-				);
-
-				const ret = res.data;
-
-				if (ret.retCode == "0000") {
-					const userinfo = ret.retValue;
+			if (res?.retValue) {
+				if (res.retCode == "0000") {
+					const userinfo = res.retValue;
 
 					userStore.setUserid(userinfo.user_id);
 					userStore.setUsername(userinfo.user_name);
 					if (userinfo.user_img) {
 						userStore.setUserimgUrl(
 							"/file" +
-								userinfo.user_img.file_path +
-								userinfo.user_img.file_name,
+							userinfo.user_img.file_path +
+							userinfo.user_img.file_name,
 						);
 					} else {
 						userStore.setUserimgUrl("");
@@ -71,7 +65,7 @@ export function useLoginForm() {
 					showAlert.value = true;
 
 					router.push({ name: "Home" });
-				} else if (ret.retCode == "2222") {
+				} else if (res.retCode == "2222") {
 					alertType.value = "alert-warning";
 					alertMessage.value = "错误: 用户名或密码不正确!";
 					showAlert.value = true;
@@ -80,14 +74,8 @@ export function useLoginForm() {
 					alertMessage.value = "错误: 后台发生异常，请稍后再试!";
 					showAlert.value = true;
 				}
-			} catch (error) {
-				console.error("Error during login:", error);
-				alertType.value = "alert-warning";
-				alertMessage.value = "错误: 发送请求异常，请稍后再试!";
-				showAlert.value = true;
-			} finally {
-				loading.value = false; // 结束加载
 			}
+			loading.value = false; // 结束加载
 		} else {
 			if (username.value === "") {
 				alertType.value = "alert-warning";
@@ -104,19 +92,21 @@ export function useLoginForm() {
 				showAlert.value = true;
 				return;
 			}
-			const user = {
+
+			const user : User  = {
+				user_id: "",
 				user_name: username.value,
 				user_pw: password.value,
+				user_img: null
 			};
-			try {
-				loading.value = true; // 开始加载
-				const res = await axios.post("/api/account/auth/signUp", user, {
-					headers: {
-						"Content-Type": "application/json",
-					},
-				});
-				const ret = res.data;
-				switch (ret.retCode) {
+
+			loading.value = true; // 开始加载
+			const res = await withRequest(() =>
+				api.auth.signUp(user)
+			);
+
+			if (res?.retValue) {
+				switch (res.retCode) {
 					case "0000":
 						password.value = "";
 						isLogin.value = true;
@@ -136,14 +126,8 @@ export function useLoginForm() {
 						showAlert.value = true;
 						break;
 				}
-			} catch (error) {
-				console.error("Error during login:", error);
-				alertType.value = "alert-warning";
-				alertMessage.value = "错误: 发送请求异常，请稍后再试!";
-				showAlert.value = true;
-			} finally {
-				loading.value = false; // 结束加载
 			}
+			loading.value = false; // 结束加载
 		}
 	};
 

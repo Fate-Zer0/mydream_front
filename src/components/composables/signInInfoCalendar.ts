@@ -2,6 +2,8 @@ import {useUserStore} from "../stores/user";
 import {useAlertStore} from "../stores/alert";
 import axios from "axios";
 import {onBeforeUnmount,onMounted,ref} from "vue";
+import {withRequest} from "./useRequest";
+import api from "../api/api";
 export function signInInfoCalendar() {
 
     const showCalendar = ref(false)
@@ -35,39 +37,17 @@ export function signInInfoCalendar() {
         const userStore = useUserStore();
         const userid = userStore.userid;
 
-        try {
-            console.log("查询签到信息");
-
-            if (!userid) {
-                useAlertStore().showAlertWithAutoHide(
-                    "alert-warning",
-                    "错误: 用户ID不能为空!",
-                );
-                return;
-            }
-            const res = await axios.get('/api/account/user/getSignInDates', {
-                params: {
-                    user_id: userid,
-                    year,
-                    month
-                }
-            })
-            const ret = res.data;
-
-            if (ret.retCode === "0000") {
-                const dates = ret.retValue;
-                return dates;
-            } else {
-                useAlertStore().showAlertWithAutoHide(
-                    "alert-danger",
-                    `错误: ${ret.retDesc || "后台发生异常，请稍后再试!"}`,
-                );
-            }
-        } catch (error) {
-            console.error("月份签到信息获取请求失败:", error);
+        if (!userid) return;
+        const res = await withRequest(() =>
+            api.user.getSignInDates(userid,year,month)
+        );
+        if (res.retCode === "0000") {
+            const dates = res.retValue;
+            return dates;
+        } else {
             useAlertStore().showAlertWithAutoHide(
                 "alert-danger",
-                "错误: 网络异常，请检查网络连接!",
+                `错误: ${res.retDesc || "后台发生异常，请稍后再试!"}`,
             );
         }
     }

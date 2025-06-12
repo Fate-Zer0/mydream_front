@@ -1,8 +1,9 @@
 import { ref } from "vue";
-import axios from "axios";
 import { useUserStore } from "../../stores/user";
 import { useRouter } from "vue-router";
 import { useAlertStore } from "../../stores/alert";
+import {withRequest} from "../../composables/useRequest";
+import api from "../../api/api";
 
 export function useHomeProcess() {
 	const hasSigned = ref(false);
@@ -17,43 +18,19 @@ export function useHomeProcess() {
 	});
 
 	async function getSigningInInfo(userid?: string) {
-		try {
-			console.log("查询签到信息");
-
-			if (!userid) {
-				useAlertStore().showAlertWithAutoHide(
-					"alert-warning",
-					"错误: 用户ID不能为空!",
-				);
-				return;
-			}
-			isSigningIn.value = true;
-			const res = await axios.get(
-				`/api/account/user/getSignInInfo?user_id=${userid}`,
-			);
-			const ret = res.data;
-
-			if (ret.retCode === "0000") {
-				const map = ret.retValue;
-				signInStats.value.consecutive = map.consecutiveSignInDays;
-				signInStats.value.maxConsecutive = map.maxConsecutiveSignInDays;
-				signInStats.value.total = map.signInCount;
-				hasSigned.value = map.isSigned;
-			} else {
-				useAlertStore().showAlertWithAutoHide(
-					"alert-danger",
-					`错误: ${ret.retDesc || "后台发生异常，请稍后再试!"}`,
-				);
-			}
-		} catch (error) {
-			console.error("签到信息获取请求失败:", error);
-			useAlertStore().showAlertWithAutoHide(
-				"alert-danger",
-				"错误: 网络异常，请检查网络连接!",
-			);
-		} finally {
-			isSigningIn.value = false;
+		if (!userid) return;
+		isSigningIn.value = true;
+		const res = await withRequest(() =>
+			api.user.getSignInInfo(userid)
+		);
+		if (res?.retValue) {
+			const map = res.retValue;
+			signInStats.value.consecutive = map.consecutiveSignInDays;
+			signInStats.value.maxConsecutive = map.maxConsecutiveSignInDays;
+			signInStats.value.total = map.signInCount;
+			hasSigned.value = map.isSigned;
 		}
+		isSigningIn.value = false;
 	}
 
 	//退出登录
@@ -68,27 +45,18 @@ export function useHomeProcess() {
 		router.push({ name: "Login" });
 	}
 	async function handleSignIn() {
-		// 修复2: 添加 userid 参数
-		try {
-			console.log("用户签到");
-			const userStore = useUserStore();
-			const userid = userStore.userid;
-			if (!userid) {
-				useAlertStore().showAlertWithAutoHide(
-					"alert-warning",
-					"错误: 用户ID不能为空!",
-				);
-				return;
-			}
-			isSigningIn.value = true;
-			const res = await axios.post("/api/account/user/signIn", userid, {
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-			const ret = res.data;
-			if (ret.retCode === "0000") {
-				if (ret.retValue) {
+		const userStore = useUserStore();
+		const userid = userStore.userid;
+
+		if (!userid) return;
+		isSigningIn.value = true;
+
+		const res = await withRequest(() =>
+			api.user.signIn(userid)
+		);
+		if (res?.retValue) {
+			if (res.retCode === "0000") {
+				if (res.retValue) {
 					useAlertStore().showAlertWithAutoHide(
 						"alert-success",
 						"成功: 签到成功!",
@@ -106,18 +74,11 @@ export function useHomeProcess() {
 			} else {
 				useAlertStore().showAlertWithAutoHide(
 					"alert-danger",
-					`错误: ${ret.retDesc || "后台发生异常，请稍后再试!"}`,
+					`错误: ${res.retDesc || "后台发生异常，请稍后再试!"}`,
 				);
 			}
-		} catch (error) {
-			console.error("签到请求失败:", error);
-			useAlertStore().showAlertWithAutoHide(
-				"alert-danger",
-				"错误: 网络异常，请检查网络连接!",
-			);
-		} finally {
-			isSigningIn.value = false;
 		}
+		isSigningIn.value = false;
 	}
 	return {
 		hasSigned,
