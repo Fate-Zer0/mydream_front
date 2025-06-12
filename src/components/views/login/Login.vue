@@ -47,6 +47,9 @@
 						@click="
 							isLogin = true;
 							showAlert = false;
+							confirmPassword = '';
+							username = '';
+							password = '';
 						"
 					>
 						<svg
@@ -74,6 +77,9 @@
 						@click="
 							isLogin = false;
 							showAlert = false;
+							username = '';
+							password = '';
+							rememberMe = false;
 						"
 					>
 						<svg
