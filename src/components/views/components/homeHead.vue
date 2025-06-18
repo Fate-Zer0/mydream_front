@@ -41,7 +41,7 @@
           >
             <img
                 :src="
-                userStore.userimgUrl ||
+                userStore.getUserimg().file_url ||
                 'https://picsum.photos/200'
               "
                 alt="用户头像"

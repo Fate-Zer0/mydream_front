@@ -1,6 +1,8 @@
 <template>
 	<div id="app">
 		<router-view />
+
+    <pet />
 	</div>
 
 	<!-- 警告信息 - 优化样式 -->
@@ -52,6 +54,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "/src/components/stores/user";
 import { useAlertStore } from "../stores/alert";
 import { computed } from "vue";
+import Pet from "./module/pet/Pet.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -70,13 +73,15 @@ userStore.getStorageUser();
 router.beforeEach((to, from, next) => {
 	switch (to.name) {
 		case "Login":
-			if (userStore.userid) {
+			if (userStore.getUserid()) {
 				next({ name: "Home" });
 			}
 			next();
 			break;
 		default:
-			if (!userStore.userid) {
+			if (!userStore.getUserid()) {
+        console.log(userStore.getUserid());
+        console.log(!userStore.getUserid());
 				useAlertStore().showAlertWithAutoHide(
 					"alert-danger",
 					"请先登录！",

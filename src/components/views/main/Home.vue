@@ -161,7 +161,7 @@
 									>
 										<img
 											:src="
-												userStore.userimgUrl ||
+												userStore.getUserimg().file_url ||
 												'https://picsum.photos/200'
 											"
 											alt="用户头像"
@@ -174,7 +174,7 @@
 								<h2
 									class="card-title hover:text-primary mb-3 cursor-pointer text-xl font-bold text-gray-800 transition-colors duration-200"
 								>
-									{{ userStore.username || "游客" }}
+									{{ userStore.getUsername() || "游客" }}
 								</h2>
 
 								<!-- 签到统计信息 -->
@@ -333,6 +333,7 @@
 					</div>
 				</div>
 			</div>
+<!--      <pet />-->
 		</div>
 
 		<!-- 👇 侧边抽屉菜单 -->
@@ -341,22 +342,23 @@
 </template>
 
 <script setup>
-import { onMounted, nextTick, ref, onBeforeUnmount , computed } from "vue";
+import { onMounted, nextTick, ref } from "vue";
 import { useUserStore } from "../../stores/user";
 import { useCarousel } from "../../composables/useCarousel";
 import { useHomeProcess } from "../../process/home/HomeProcess";
 import { signInInfoCalendar } from "../../composables/signInInfoCalendar";
 import Calendar from "../components/signInInfoCalendar.vue";
 import Header from "../components/homeHead.vue";
-import SideDrawer from '../components/homeSideDrawer.vue'
+import SideDrawer from "../components/homeSideDrawer.vue";
+import Pet from "../module/pet/Pet.vue"
 
 const userStore = useUserStore();
 
 const menuItems = [
   { title: '首页', href: '/home', icon: '🏠' },
-  { title: '数据统计', href: '/home', icon: '📊' },
-  { title: '系统设置', href: '/home', icon: '⚙️' },
-  { title: '帮助中心', href: '/home', icon: '❓' }
+  { title: '留言板', href: '/messageBoard', icon: '📊' },
+  { title: '系统设置', href: '/settings', icon: '⚙️' },
+  { title: '帮助支持', href: '/help', icon: '❓' }
 ]
 
 // 功能模块数据
@@ -439,7 +441,7 @@ const {
 onMounted(async () => {
 	await nextTick();
 	checkForSlides();
-	await getSigningInInfo(userStore.userid);
+	await getSigningInInfo(userStore.getUserid());
 });
 </script>
 

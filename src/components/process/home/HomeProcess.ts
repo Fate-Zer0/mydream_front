@@ -41,12 +41,12 @@ export function useHomeProcess() {
 	}
 	async function handleSignIn() {
 		const userStore = useUserStore();
-		const userid = userStore.userid;
+		const user_id = userStore.getUserid();
 
-		if (!userid) return;
+		if (!user_id) return;
 		isSigningIn.value = true;
 
-		const res = await withRequest(() => api.user.signIn(userid));
+		const res = await withRequest(() => api.user.signIn(user_id));
 		if (res?.retValue) {
 			if (res.retCode === "0000") {
 				if (res.retValue) {
@@ -56,7 +56,7 @@ export function useHomeProcess() {
 					);
 					hasSigned.value = true;
 
-					getSigningInInfo(userid);
+					getSigningInInfo(user_id);
 				} else {
 					useAlertStore().showAlertWithAutoHide(
 						"alert-danger",

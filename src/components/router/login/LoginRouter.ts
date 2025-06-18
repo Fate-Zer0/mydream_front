@@ -13,12 +13,22 @@ const routes: RouteRecordRaw[] = [
 	{
 		path: "/login",
 		name: "Login",
-		component: () => import("../../views/login/Login.vue"),
+		component: () => import("../../views/main/Login.vue"),
 	},
 	{
 		path: "/home",
 		name: "Home",
-		component: () => import("../../views/login/Home.vue"),
+		component: () => import("../../views/main/Home.vue"),
+	},
+	{
+		path: "/help",
+		name: "Help",
+		component: () => import("../../views/main/Help.vue"),
+	},
+	{
+		path: "/messageBoard",
+		name: "MessageBoard",
+		component: () => import("../../views/module/msgBoard/MessageBoard.vue"),
 	},
 ];
 

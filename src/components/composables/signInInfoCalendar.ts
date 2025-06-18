@@ -35,7 +35,7 @@ export function signInInfoCalendar() {
     }
     async function getSignInByYearAndMonth(year, month) {
         const userStore = useUserStore();
-        const userid = userStore.userid;
+        const userid = userStore.getUserid();
 
         if (!userid) return;
         const res = await withRequest(() =>

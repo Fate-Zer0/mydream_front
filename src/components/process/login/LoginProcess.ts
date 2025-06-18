@@ -44,13 +44,7 @@ export function useLoginForm() {
 					userStore.setUserid(userinfo.user_id);
 					userStore.setUsername(userinfo.user_name);
 					if (userinfo.user_img) {
-						userStore.setUserimgUrl(
-							"/file" +
-								userinfo.user_img.file_path +
-								userinfo.user_img.file_name,
-						);
-					} else {
-						userStore.setUserimgUrl("");
+						userStore.setUserimg(userinfo.user_img);
 					}
 
 					if (rememberMe.value) {
