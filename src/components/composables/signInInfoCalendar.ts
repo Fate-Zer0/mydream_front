@@ -39,7 +39,7 @@ export function signInInfoCalendar() {
 
         if (!userid) return;
         const res = await withRequest(() =>
-            api.user.getSignInDates(userid,year,month)
+            api.account.user.getSignInDates(userid,year,month)
         );
         if (res.retCode === "0000") {
             const dates = res.retValue;

@@ -113,7 +113,7 @@
                   <div class="w-8 h-8 rounded-xl overflow-hidden">
                     <img
                         :src="
-                        item.user?.user_img?.file_url ||
+                        currentUser.user_img?.file_url ||
                         'https://picsum.photos/200'
                         "
                         :alt="currentUser.user_name" class="object-cover" />
@@ -167,6 +167,7 @@
           <div class="absolute left-4 top-6 w-4 h-4 bg-white border-2 border-indigo-300 rounded-full z-10"></div>
 
           <MessageItem
+              :par_id="props.par_id"
               :item="reply"
               :current-user="currentUser"
               :is-reply="true"
@@ -184,6 +185,10 @@
 import { ref, nextTick, onMounted } from 'vue'
 
 const props = defineProps({
+  par_id: {
+    type: Number,
+    default: 0
+  },
   item: {
     type: Object,
     required: true
@@ -224,9 +229,7 @@ async function submitReply() {
 
   try {
     await new Promise(resolve => setTimeout(resolve, 500)) // 模拟API延迟
-    console.log('提交回复:', replyText.value)
-    console.log('提交回复:', props.item)
-    emit('reply', props.item.msg_id, replyText.value, props.item.user.user_name)
+    emit('reply', props.par_id, replyText.value, props.item.user.user_name)
     replyText.value = ''
     showReplyInput.value = false
   } catch (error) {

@@ -1,8 +1,6 @@
-import auth from './account/authApi';
-import user from './account/userApi';
-import msgBoard from './module/msgBoardApi';
+import account from "./account/account";
+import module from "./module/module"
 export default {
-    auth,
-    user,
-    msgBoard,
+    account,
+    module,
 };

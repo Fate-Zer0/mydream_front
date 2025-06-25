@@ -20,7 +20,7 @@ export function useHomeProcess() {
 	async function getSigningInInfo(userid?: string) {
 		if (!userid) return;
 		isSigningIn.value = true;
-		const res = await withRequest(() => api.user.getSignInInfo(userid));
+		const res = await withRequest(() => api.account.user.getSignInInfo(userid));
 		if (res?.retValue) {
 			const map = res.retValue;
 			signInStats.value.consecutive = map.consecutiveSignInDays;
@@ -46,7 +46,7 @@ export function useHomeProcess() {
 		if (!user_id) return;
 		isSigningIn.value = true;
 
-		const res = await withRequest(() => api.user.signIn(user_id));
+		const res = await withRequest(() => api.account.user.signIn(user_id));
 		if (res?.retValue) {
 			if (res.retCode === "0000") {
 				if (res.retValue) {

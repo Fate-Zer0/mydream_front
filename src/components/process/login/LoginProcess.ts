@@ -35,7 +35,7 @@ export function useLoginForm() {
 				user_img: null,
 			};
 
-			const res = await withRequest(() => api.auth.chickLogin(user));
+			const res = await withRequest(() => api.account.auth.chickLogin(user));
 
 			if (res?.retValue) {
 				if (res.retCode == "0000") {
@@ -94,7 +94,7 @@ export function useLoginForm() {
 			};
 
 			loading.value = true; // 开始加载
-			const res = await withRequest(() => api.auth.signUp(user));
+			const res = await withRequest(() => api.account.auth.signUp(user));
 
 			if (res?.retValue) {
 				switch (res.retCode) {

@@ -79,6 +79,7 @@
               class="message-card"
           >
             <MessageItem
+                :par_id="msg.msg_id"
                 :item="msg"
                 :current-user="currentUser"
                 @reply="handleReply"
@@ -169,7 +170,7 @@ const messages = ref<MsgBoard[]>([
 
 async function getMsgBoardInfo(userid?: string) {
   if (!userid) return;
-  const res = await withRequest(() => api.msgBoard.getMsgBoardInfo(userid));
+  const res = await withRequest(() => api.module.msgBoard.getMsgBoardInfo(userid));
   if (res?.retValue) {
     messages.value = res.retValue;
   }
@@ -183,30 +184,17 @@ const submitMessage = async (): Promise<void> => {
   const userStore = useUserStore();
 
   try {
-    // 模拟API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
-
     const newMsg: MsgBoard = {
-      msg_id: Date.now(),
+      msg_id: 0,
       msg_content: newMessage.value,
       user: userStore,
       msg_upcount: 0,
       isup: false,
-      msg_time: new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      msg_time: "",
       hf_msgbds: []
     }
 
-    messages.value.unshift(newMsg)
-    newMessage.value = ''
-
-    showSuccessToast('留言发布成功！')
-
+    addReplyToMessage(newMsg)
   } catch (error) {
     console.error('提交留言失败:', error)
     showErrorToast('留言发布失败，请重试')
@@ -219,24 +207,17 @@ const submitMessage = async (): Promise<void> => {
 const handleReply = async (parentId: number, replyContent: string, parentAuthor: string): Promise<void> => {
   try {
     const reply: MsgBoard = {
-      msg_id: Date.now(),
+      msg_id: parentId,
       msg_content: replyContent.startsWith('@') ? replyContent : `@${parentAuthor} ${replyContent}`,
       user: currentUser,
       msg_upcount: 0,
       isup: false,
-      msg_time: new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      msg_time: "",
       hf_msgbds: []
     }
 
-    if (addReplyToMessage(messages.value, parentId, reply)) {
-      showSuccessToast('回复发布成功！')
-    }
+    await addReplyToMessage(reply)
+
   } catch (error) {
     console.error('回复失败:', error)
     showErrorToast('回复发布失败，请重试')
@@ -244,17 +225,14 @@ const handleReply = async (parentId: number, replyContent: string, parentAuthor:
 }
 
 // 递归查找并添加回复
-const addReplyToMessage = (messages: MsgBoard[], parentId: number, reply: MsgBoard): boolean => {
-  for (let msg of messages) {
-    if (msg.msg_id === parentId) {
-      msg.hf_msgbds.push(reply)
-      return true
-    }
-    if (addReplyToMessage(msg.hf_msgbds, parentId, reply)) {
-      return true
-    }
+const addReplyToMessage = async (reply: MsgBoard): Promise<void> => {
+
+  const res = await withRequest(() => api.module.msgBoard.addMsgBoard(reply));
+  if (res.retCode=="0000") {
+    newMessage.value = ""
+    showSuccessToast('留言发布成功！');
+    await getMsgBoardInfo(userStore.getUserid())
   }
-  return false
 }
 
 // 点赞逻辑
@@ -263,16 +241,21 @@ const toggleLike = async (messageId: number): Promise<void> => {
     const message = findMessageById(messages.value, messageId)
     if (!message) return
 
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 200))
+    const user_id = userStore.getUserid();
+    const passive_id = message.user.user_id;
+    const rec_type = "61001";
+    const obj_id = message.msg_id;
 
-    if (!message.isup) {
-      message.msg_upcount += 1
-      message.isup = true
-      showSuccessToast('点赞成功！')
-    } else {
-      message.msg_upcount -= 1
-      message.isup = false
+    const res = await withRequest(() => api.module.record.addRecord(user_id,passive_id,rec_type,obj_id));
+    if (res.retCode=="0000") {
+      if (!message.isup) {
+        message.msg_upcount += 1
+        message.isup = true
+        showSuccessToast('点赞成功！')
+      } else {
+        message.msg_upcount -= 1
+        message.isup = false
+      }
     }
   } catch (error) {
     console.error('点赞操作失败:', error)
@@ -281,17 +264,17 @@ const toggleLike = async (messageId: number): Promise<void> => {
 }
 
 // 递归查找留言
-const findMessageById = (messages: MsgBoard[], id: number): MsgBoard | null => {
-  for (let msg of messages) {
-    if (msg.msg_id === id) {
-      return msg
-    }
-    const found = findMessageById(msg.hf_msgbds, id)
-    if (found) return found
-  }
-  return null
-}
+function findMessageById(messages: MsgBoard[], id: number): MsgBoard | null {
+  for (const msg of messages) {
+    if (msg.msg_id === id) return msg;
 
+    const replies = msg.hf_msgbds ?? [];
+    const result = findMessageById(replies, id);
+    if (result) return result;
+  }
+
+  return null;
+}
 // 提示消息函数
 const showSuccessToast = (message: string): void => {
   console.log('Success:', message)

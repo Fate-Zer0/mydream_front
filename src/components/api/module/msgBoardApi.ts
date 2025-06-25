@@ -6,9 +6,19 @@ export default {
     /**
      * 获取留言板信息
      */
-    getMsgBoardInfo(userid: string): Promise<ReturnValue<MsgBoard[]>> {
+    getMsgBoardInfo(user_id: string): Promise<ReturnValue<MsgBoard[]>> {
         return request.get("/module/msgBoard/getMsgBoardInfo", {
-            params: { user_id: userid },
+            params: { user_id: user_id },
+        });
+    },
+    /**
+     * 添加留言
+     */
+    addMsgBoard(msgBoard: MsgBoard ): Promise<ReturnValue<String>> {
+        return request.post("/module/msgBoard/addMsgBoard",msgBoard , {
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
     },
 }
