@@ -55,6 +55,7 @@
           <li>
             <a
                 class="rounded-lg text-black transition-colors duration-200 hover:bg-indigo-50"
+                href="/myinfo"
             >👤 我的资料</a
             >
           </li>

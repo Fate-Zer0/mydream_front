@@ -275,7 +275,7 @@
 										<span class="mr-2">🎁</span>
 										<span class="text-blue-700"
 											>签到获得积分
-											<strong>+10</strong></span
+											<strong>+5</strong></span
 										>
 									</div>
 								</div>

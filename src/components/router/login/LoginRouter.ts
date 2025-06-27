@@ -30,6 +30,11 @@ const routes: RouteRecordRaw[] = [
 		name: "MessageBoard",
 		component: () => import("../../views/module/msgBoard/MessageBoard.vue"),
 	},
+	{
+		path: "/myinfo",
+		name: "Myinfo",
+		component: () => import("../../views/main/MyInfo.vue"),
+	},
 ];
 
 export const loginRouter = createRouter({

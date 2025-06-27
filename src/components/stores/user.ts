@@ -10,7 +10,7 @@ export const useUserStore = defineStore("user", {
 		user_img: null,
 	}),
 	actions: {
-		setUserInfo(userid: string, username: string, user_img: File, userimgUrl: string) {
+		setUserInfo(userid: string, username: string, user_img: File) {
 			this.user_id = userid;
 			this.user_name = username;
 			this.user_img = user_img;
@@ -21,8 +21,8 @@ export const useUserStore = defineStore("user", {
 		setUsername(username: string) {
 			this.user_name = username;
 		},
-		setUserimg(userimgUrl: File) {
-			this.user_img = userimgUrl;
+		setUserimg(user_img: File) {
+			this.user_img = user_img;
 		},
 		getUserid() {
 			return this.user_id;

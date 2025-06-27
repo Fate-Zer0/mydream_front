@@ -187,14 +187,14 @@ const submitMessage = async (): Promise<void> => {
     const newMsg: MsgBoard = {
       msg_id: 0,
       msg_content: newMessage.value,
-      user: userStore,
+      user: userStore.getUser(),
       msg_upcount: 0,
       isup: false,
       msg_time: "",
       hf_msgbds: []
     }
 
-    addReplyToMessage(newMsg)
+    await addReplyToMessage(newMsg)
   } catch (error) {
     console.error('提交留言失败:', error)
     showErrorToast('留言发布失败，请重试')

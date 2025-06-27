@@ -1,5 +1,6 @@
 import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
+import type {UserInfo} from "../../type/UserInfo.ts";
 /**
  * 接口服务模块
  */
@@ -37,6 +38,17 @@ export default {
             params: { user_id: userid ,year, month},
         });
     },
+
+    /**
+     * 获取用户信息
+     * @param userid - 用户ID
+     */
+    getUserInfo(userid: string): Promise<ReturnValue<UserInfo>> {
+        return request.get("/account/user/getUserInfo", {
+            params: { user_id: userid },
+        });
+    },
+
 };
 
 export type SignInInfo = {

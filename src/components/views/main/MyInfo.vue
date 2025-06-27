@@ -1,0 +1,710 @@
+<template>
+  <div class="drawer drawer-mobile min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <!-- 抽屉开关 -->
+    <input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
+    <div class="drawer-content flex flex-col">
+      <!-- 顶部导航栏 -->
+      <Header />
+
+      <!-- 主体内容 -->
+      <div class="container mx-auto mt-8 px-4 pb-8">
+        <!-- 页面标题 -->
+        <div class="mb-8 text-center">
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            个人信息
+          </h1>
+          <p class="text-gray-600">管理你的个人资料和偏好设置</p>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- 左侧头像展示卡片 -->
+          <div class="lg:col-span-1">
+            <div class="card border border-white/20 bg-gradient-to-br from-white to-indigo-50/50 shadow-2xl backdrop-blur-sm sticky top-8">
+              <div class="card-body items-center text-center p-8">
+                <!-- 头像区域 -->
+                <div class="avatar indicator mb-6">
+                  <div class="ring-primary ring-offset-base-100 hover:ring-secondary h-32 w-32 rounded-full shadow-xl ring-4 ring-offset-4 transition-all duration-500 hover:scale-110 hover:shadow-2xl">
+                    <img
+                        :src="userStore.getUserimg().file_url || 'https://picsum.photos/200'"
+                        alt="用户头像"
+                        class="h-full w-full rounded-full object-cover transition-all duration-300 hover:brightness-110"
+                    />
+                  </div>
+                  <!-- 在线状态指示器 -->
+                  <span class="indicator-item badge badge-success h-6 w-6 rounded-full border-2 border-white animate-pulse"></span>
+                </div>
+
+                <!-- 用户名显示 -->
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                  {{ userStore.getUsername() || "用户名" }}
+                </h2>
+
+                <!-- 个性签名显示 -->
+                <p class="text-gray-600 text-sm italic mb-4 min-h-[1.5rem]">
+                  {{ profileData.user_grjj || "还没有个性签名~" }}
+                </p>
+
+                <!-- 用户统计 -->
+                <div class="stats stats-vertical w-full rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-lg">
+                  <div class="stat py-3">
+                    <div class="stat-figure text-indigo-500">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
+                        <span class="text-sm">📅</span>
+                      </div>
+                    </div>
+                    <div class="stat-title text-xs text-gray-600">注册时间</div>
+                    <div class="stat-value text-sm font-bold text-indigo-600">
+                      {{ formatDate(profileData.user_create_date) }}
+                    </div>
+                  </div>
+                  <div class="stat py-3">
+                    <div class="stat-figure text-emerald-500">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+                        <span class="text-sm">⭐</span>
+                      </div>
+                    </div>
+                    <div class="stat-title text-xs text-gray-600">积分</div>
+                    <div class="stat-value text-sm font-bold text-emerald-600">
+                      {{ profileData.user_points || 0 }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧编辑表单 -->
+          <div class="lg:col-span-2">
+            <div class="card border border-white/20 bg-gradient-to-br from-white to-gray-50/50 shadow-2xl backdrop-blur-sm">
+              <div class="card-body p-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100">
+                    ✏️
+                  </span>
+                  编辑资料
+                </h3>
+
+                <form @submit.prevent="handleSubmit" class="space-y-6">
+                  <!-- 头像上传 -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text text-base font-semibold text-gray-700 flex items-center gap-2">
+                        <span>📸</span> 头像
+                      </span>
+                    </label>
+                    <div class="flex items-center gap-4">
+                      <div class="avatar">
+                        <div class="w-16 h-16 rounded-full ring-2 ring-gray-200">
+                          <img :src="userStore.getUserimg().file_url || 'https://picsum.photos/200'" alt="预览头像" />
+                        </div>
+                      </div>
+                      <div class="flex-1">
+                        <input
+                            type="file"
+                            ref="avatarInput"
+                            @change="handleAvatarChange"
+                            accept="image/*"
+                            class="file-input file-input-bordered file-input-primary w-full rounded-xl"
+                        />
+                        <p class="text-sm text-gray-500 mt-1">支持 JPG、PNG 格式，大小不超过 2MB</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 用户名 -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text text-base font-semibold text-gray-700 flex items-center gap-2">
+                        <span>👤</span> 用户名
+                      </span>
+                    </label>
+                    <input
+                        type="text"
+                        v-model="profileData.user.user_name"
+                        placeholder="请输入用户名"
+                        class="input input-bordered input-primary rounded-xl w-full focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        maxlength="20"
+                    />
+                    <label class="label">
+                      <span class="label-text-alt text-gray-500">{{ profileData.user.user_name?.length || 0 }}/20</span>
+                    </label>
+                  </div>
+
+                  <!-- 性别选择 -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text text-base font-semibold text-gray-700 flex items-center gap-2">
+                        <span>⚧️</span> 性别
+                      </span>
+                    </label>
+
+                    <!-- 性别类型选择 -->
+                    <div class="mb-4">
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div
+                            v-for="category in genderCategories"
+                            :key="category.id"
+                            @click="selectGenderCategory(category.id)"
+                            class="cursor-pointer group relative"
+                            :class="[
+                            'p-4 rounded-2xl border-2 transition-all duration-300',
+                            selectedGenderCategory == category.id
+                              ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-lg transform scale-105'
+                              : 'border-gray-200 bg-gradient-to-br from-white to-gray-50 hover:border-indigo-300 hover:scale-105'
+                          ]"
+                        >
+                          <div class="flex flex-col items-center text-center">
+                            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">
+                              {{ category.icon }}
+                            </div>
+                            <h4 class="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                              {{ category.name }}
+                            </h4>
+                            <p class="text-sm text-gray-500 mt-1">
+                              {{ category.description }}
+                            </p>
+                          </div>
+                          <!-- 选中指示器 -->
+                          <div
+                              v-if="selectedGenderCategory == category.id"
+                              class="absolute -top-2 -right-2 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg"
+                          >
+                            <span class="text-white text-sm">✓</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 具体性别选择 -->
+                    <div v-if="selectedGenderCategory" class="space-y-3">
+                      <h5 class="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                        <span>{{ getCurrentCategoryName() }}</span>
+                        <span class="text-xs bg-gray-100 px-2 py-1 rounded-full">选择具体性别</span>
+                      </h5>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label
+                            v-for="gender in getCurrentGenderOptions()"
+                            :key="gender.id"
+                            class="cursor-pointer group relative gender-option"
+                        >
+                          <input
+                              type="radio"
+                              :value="gender.id"
+                              v-model="profileData.user_sex_code"
+                              class="sr-only"
+                          />
+                          <div
+                              class="p-4 rounded-xl border-2 transition-all duration-300"
+                              :class="[
+                              profileData.user_sex_code == gender.id
+                                ? getSelectedGenderStyle()
+                                : 'border-gray-200 bg-gradient-to-r from-white to-gray-50 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]'
+                            ]"
+                          >
+                            <div class="flex items-center justify-between">
+                              <div class="flex items-center gap-3">
+                                <div class="text-2xl group-hover:scale-110 transition-transform duration-200">
+                                  {{ gender.symbol }}
+                                </div>
+                                <div>
+                                  <div class="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                                    {{ gender.name }}
+                                  </div>
+                                  <div class="text-sm text-gray-500 mt-1" v-if="gender.description">
+                                    {{ gender.description }}
+                                  </div>
+                                </div>
+                              </div>
+                              <!-- 选中指示器 -->
+                              <div
+                                  v-if="profileData.user_sex_code == gender.id"
+                                  class="w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
+                                  :class="getSelectedIndicatorStyle()"
+                              >
+                                <span class="text-white text-xs">✓</span>
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- 未选择提示 -->
+                    <div v-else class="text-center py-8 text-gray-400">
+                      <div class="text-4xl mb-2">🤔</div>
+                      <p class="text-sm">请先选择一个性别类型</p>
+                    </div>
+                  </div>
+
+                  <!-- 个性签名 -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text text-base font-semibold text-gray-700 flex items-center gap-2">
+                        <span>✨</span> 个性签名
+                      </span>
+                    </label>
+                    <textarea
+                        v-model="profileData.user_grjj"
+                        placeholder="写下你的个性签名，让别人更了解你..."
+                        class="textarea textarea-bordered textarea-primary rounded-xl w-full h-24 resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        maxlength="100"
+                    ></textarea>
+                    <label class="label">
+                      <span class="label-text-alt text-gray-500">{{ profileData.user_grjj?.length || 0 }}/100</span>
+                    </label>
+                  </div>
+
+                  <!-- 操作按钮 -->
+                  <div class="flex gap-4 pt-6">
+                    <button
+                        type="submit"
+                        :disabled="isSaving"
+                        class="btn flex-1 rounded-2xl font-semibold shadow-lg transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:scale-105 hover:from-indigo-600 hover:to-purple-700"
+                    >
+                      <span :class="{ 'loading loading-spinner': isSaving }">
+                        {{ isSaving ? '保存中...' : '💾 保存修改' }}
+                      </span>
+                    </button>
+                    <button
+                        type="button"
+                        @click="resetForm"
+                        class="btn btn-outline btn-primary flex-1 rounded-2xl font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
+                    >
+                      🔄 重置
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- 危险操作区域 -->
+            <div class="card border border-red-200 bg-gradient-to-br from-red-50/50 to-white shadow-xl mt-6">
+              <div class="card-body p-6">
+                <h3 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-3">
+                  <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100">
+                    ⚠️
+                  </span>
+                  危险操作
+                </h3>
+                <p class="text-gray-600 mb-4">以下操作将会永久性地影响您的账户，请谨慎操作。</p>
+                <div class="flex gap-3">
+                  <button class="btn btn-outline btn-warning rounded-xl">
+                    🔐 修改密码
+                  </button>
+                  <button class="btn btn-outline btn-error rounded-xl">
+                    🗑️ 删除账户
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 侧边抽屉菜单 -->
+    <SideDrawer :menu-items="menuItems" />
+
+    <!-- 成功提示弹窗 -->
+    <div
+        v-if="showSuccessAlert"
+        class="alert alert-success alert-top-fixed animate-slide-down shadow-2xl"
+    >
+      <div class="flex items-center">
+        <span class="text-2xl mr-3">✅</span>
+        <div>
+          <h3 class="font-bold">保存成功！</h3>
+          <div class="text-sm opacity-90">您的个人信息已更新</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue';
+import Header from '../components/homeHead.vue';
+import SideDrawer from '../components/homeSideDrawer.vue';
+import {useUserStore} from "../../stores/user";
+import {withRequest} from "../../composables/useRequest";
+import api from "../../api/api";
+import type {UserInfo} from "../../type/UserInfo.ts";
+
+const userStore = useUserStore();
+
+// 菜单项
+const menuItems = [
+  { title: '首页', href: '/home', icon: '🏠' },
+  { title: '留言板', href: '/messageBoard', icon: '📊' },
+  { title: '系统设置', href: '/settings', icon: '⚙️' },
+  { title: '帮助支持', href: '/help', icon: '❓' }
+];
+
+// 表单数据
+const profileData = reactive<UserInfo>(
+    {
+      user: userStore.getUser(),
+      user_create_date: '',
+      last_sign_in_date: '',
+      user_points: '',
+      user_sex_code: '',
+      user_sex_name: '',
+      user_grjj: ''
+    }
+);
+
+// 性别选择相关
+const selectedGenderCategory = ref(null);
+
+// 性别类型数据
+const genderCategories = ref([
+  {
+    id: 51000,
+    name: '传统',
+    icon: '👥',
+    description: '传统性别认知'
+  },
+  {
+    id: 52000,
+    name: '多元化',
+    icon: '🌈',
+    description: '多元性别认知'
+  },
+  {
+    id: 53000,
+    name: '传奇',
+    icon: '✨',
+    description: '特殊性别选项'
+  }
+]);
+
+// 具体性别数据
+const genderOptions = ref([
+  // 传统
+  { id: 51001, categoryId: 51000, name: '男', symbol: '♂', description: '' },
+  { id: 51002, categoryId: 51000, name: '女', symbol: '♀', description: '' },
+  // 多元化
+  { id: 52001, categoryId: 52000, name: '双性', symbol: '⚤', description: '生理上同时具有男性和女性特征的个体' },
+  { id: 52002, categoryId: 52000, name: '酷儿', symbol: '🏳️‍🌈', description: '女性个体表现出传统上与男性相关联的行为特征' },
+  { id: 52003, categoryId: 52000, name: '两性', symbol: '⚥', description: '个体在不同时间或情境下可能认同为男性或女性' },
+  { id: 52004, categoryId: 52000, name: '无性', symbol: '○', description: '个体不认同于任何性别' },
+  { id: 52005, categoryId: 52000, name: '性别流动', symbol: '🌊', description: '个体的性别认同可能随时间或情境而改变' },
+  // 传奇
+  { id: 53001, categoryId: 53000, name: '一个', symbol: '1️⃣', description: '我是一个一个一个...' },
+  { id: 53002, categoryId: 53000, name: '武装直升机', symbol: '🚁', description: '哼 想逃?' }
+]);
+
+// 原始数据备份（用于重置）
+const originalData = reactive<UserInfo>({});
+
+// 状态管理
+const isSaving = ref(false);
+const showSuccessAlert = ref(false);
+const avatarInput = ref(null);
+
+// 初始化数据
+onMounted(() => {
+  // 模拟从后端获取用户数据
+   loadUserProfile();
+});
+
+// 加载用户资料
+const loadUserProfile = async (): Promise<void> => {
+  const userData = await getUserInfoByUserid(userStore.getUserid());
+
+  Object.assign(profileData, userData);
+  Object.assign(originalData, userData);
+
+  // 根据已选择的性别设置类型
+  if (profileData.user_sex_code) {
+    const selectedGender = genderOptions.value.find(g => g.id == profileData.user_sex_code);
+    if (selectedGender) {
+      selectedGenderCategory.value = selectedGender.categoryId;
+    }
+  }
+}
+
+async function getUserInfoByUserid(userid?: string) {
+  if (!userid) return;
+  const res = await withRequest(() => api.account.user.getUserInfo(userid));
+  if (res?.retValue) {
+    return res.retValue;
+  }
+}
+
+// 选择性别类型
+function selectGenderCategory(categoryId) {
+  selectedGenderCategory.value = categoryId;
+  // 清空已选择的具体性别（如果不属于当前类型）
+  if (profileData.user_sex_code) {
+    const currentGender = genderOptions.value.find(g => g.id == profileData.user_sex_code);
+    if (!currentGender || currentGender.categoryId !== categoryId) {
+      profileData.user_sex_code = '';
+    }
+  }
+}
+
+// 获取当前类型的性别选项
+function getCurrentGenderOptions() {
+  if (!selectedGenderCategory.value) return [];
+  return genderOptions.value.filter(g => g.categoryId == selectedGenderCategory.value);
+}
+
+// 获取当前类型名称
+function getCurrentCategoryName() {
+  const category = genderCategories.value.find(c => c.id == selectedGenderCategory.value);
+  return category ? category.name : '';
+}
+
+// 获取选中性别的样式
+function getSelectedGenderStyle() {
+  const categoryId = selectedGenderCategory.value;
+  switch (categoryId) {
+    case 51000: // 传统
+      return 'border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg transform scale-[1.02]';
+    case 52000: // 多元化
+      return 'border-purple-500 bg-gradient-to-r from-purple-50 via-pink-50 to-indigo-50 shadow-lg transform scale-[1.02] rainbow-glow';
+    case 53000: // 传奇
+      return 'border-yellow-500 bg-gradient-to-r from-yellow-50 to-orange-50 shadow-lg transform scale-[1.02] legendary-glow';
+    default:
+      return 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 shadow-lg transform scale-[1.02]';
+  }
+}
+
+// 获取选中指示器样式
+function getSelectedIndicatorStyle() {
+  const categoryId = selectedGenderCategory.value;
+  switch (categoryId) {
+    case 51000: // 传统
+      return 'bg-blue-500';
+    case 52000: // 多元化
+      return 'bg-purple-500';
+    case 53000: // 传奇
+      return 'bg-yellow-500';
+    default:
+      return 'bg-indigo-500';
+  }
+}
+
+// 处理头像上传
+function handleAvatarChange(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 文件大小检查
+  if (file.size > 2 * 1024 * 1024) {
+    alert('文件大小不能超过 2MB');
+    return;
+  }
+
+  // 文件类型检查
+  if (!file.type.startsWith('image/')) {
+    alert('请选择图片文件');
+    return;
+  }
+
+  // 创建预览
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    profileData.user.user_img.file_url = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 提交表单
+async function handleSubmit() {
+  // 表单验证
+  if (!profileData.user.user_name || profileData.user.user_name.trim().length == 0) {
+    alert('请输入用户名');
+    return;
+  }
+
+  if (profileData.user.user_name.length > 20) {
+    alert('用户名不能超过20个字符');
+    return;
+  }
+
+  if (profileData.user_grjj && profileData.user_grjj.length > 100) {
+    alert('个性签名不能超过100个字符');
+    return;
+  }
+
+  isSaving.value = true;
+
+  try {
+    // 模拟 API 调用
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // 更新原始数据
+    Object.assign(originalData, { ...profileData });
+
+    // 显示成功提示
+    showSuccessAlert.value = true;
+    setTimeout(() => {
+      showSuccessAlert.value = false;
+    }, 3000);
+
+    console.log('保存的数据:', profileData);
+  } catch (error) {
+    console.error('保存失败:', error);
+    alert('保存失败，请重试');
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+// 重置表单
+function resetForm() {
+  Object.assign(profileData, { ...originalData });
+  // 重置性别类型选择
+  if (profileData.user_sex_code) {
+    const selectedGender = genderOptions.value.find(g => g.id == profileData.user_sex_code);
+    if (selectedGender) {
+      selectedGenderCategory.value = selectedGender.categoryId;
+    }
+  } else {
+    selectedGenderCategory.value = null;
+  }
+  if (avatarInput.value) {
+    avatarInput.value.value = '';
+  }
+}
+
+// 格式化日期
+function formatDate(date) {
+  if (!date) return '-';
+  const d = new Date(date);
+  return d.toLocaleDateString('zh-CN');
+}
+</script>
+
+<style scoped>
+/* 警告框动画 */
+@keyframes slide-down {
+  0% {
+    top: -100px;
+    opacity: 0;
+    transform: translateX(-50%) scale(0.9);
+  }
+  50% {
+    top: 70px;
+    opacity: 0.8;
+    transform: translateX(-50%) scale(1.05);
+  }
+  100% {
+    top: 80px;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.alert-top-fixed {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 28rem;
+  margin: 0 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-radius: 1rem;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4f46e5, #7c3aed);
+}
+
+/* 卡片悬浮效果 */
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* 表单元素悬浮效果 */
+.input:focus,
+.textarea:focus {
+  transform: translateY(-1px);
+}
+
+/* 头像悬浮效果 */
+.avatar .w-32:hover {
+  transform: scale(1.1) rotate(2deg);
+}
+
+/* 按钮悬浮效果 */
+.btn:hover:not(.btn-disabled) {
+  transform: translateY(-1px);
+}
+
+/* 单选框标签悬浮效果 */
+.label:hover {
+  transform: translateY(-1px);
+}
+
+/* 文件输入框样式优化 */
+.file-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* 优化的多元化性别选项效果 */
+.rainbow-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.rainbow-glow::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #a855f7, #ec4899, #f97316, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6);
+  border-radius: 0.75rem;
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(1px);
+}
+
+/* 传奇性别选项效果 */
+.legendary-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.legendary-glow::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #b45309);
+  border-radius: 0.75rem;
+  z-index: -1;
+  opacity: 0.8;
+  filter: blur(0.5px);
+}
+</style>
