@@ -197,7 +197,7 @@
                           <div
                               class="p-4 rounded-xl border-2 transition-all duration-300"
                               :class="[
-                              profileData.user_sex_code == gender.id
+                              profileData.user_sex_code === gender.id
                                 ? getSelectedGenderStyle()
                                 : 'border-gray-200 bg-gradient-to-r from-white to-gray-50 hover:border-gray-300 hover:shadow-md hover:scale-[1.02]'
                             ]"
@@ -218,7 +218,7 @@
                               </div>
                               <!-- 选中指示器 -->
                               <div
-                                  v-if="profileData.user_sex_code == gender.id"
+                                  v-if="profileData.user_sex_code === gender.id"
                                   class="w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
                                   :class="getSelectedIndicatorStyle()"
                               >
@@ -360,19 +360,19 @@ const selectedGenderCategory = ref(null);
 // 性别类型数据
 const genderCategories = ref([
   {
-    id: 51000,
+    id: '51000',
     name: '传统',
     icon: '👥',
     description: '传统性别认知'
   },
   {
-    id: 52000,
+    id: '52000',
     name: '多元化',
     icon: '🌈',
     description: '多元性别认知'
   },
   {
-    id: 53000,
+    id: '53000',
     name: '传奇',
     icon: '✨',
     description: '特殊性别选项'
@@ -382,21 +382,29 @@ const genderCategories = ref([
 // 具体性别数据
 const genderOptions = ref([
   // 传统
-  { id: 51001, categoryId: 51000, name: '男', symbol: '♂', description: '' },
-  { id: 51002, categoryId: 51000, name: '女', symbol: '♀', description: '' },
+  { id: '51001', categoryId: '51000', name: '男', symbol: '♂', description: '' },
+  { id: '51002', categoryId: '51000', name: '女', symbol: '♀', description: '' },
   // 多元化
-  { id: 52001, categoryId: 52000, name: '双性', symbol: '⚤', description: '生理上同时具有男性和女性特征的个体' },
-  { id: 52002, categoryId: 52000, name: '酷儿', symbol: '🏳️‍🌈', description: '女性个体表现出传统上与男性相关联的行为特征' },
-  { id: 52003, categoryId: 52000, name: '两性', symbol: '⚥', description: '个体在不同时间或情境下可能认同为男性或女性' },
-  { id: 52004, categoryId: 52000, name: '无性', symbol: '○', description: '个体不认同于任何性别' },
-  { id: 52005, categoryId: 52000, name: '性别流动', symbol: '🌊', description: '个体的性别认同可能随时间或情境而改变' },
+  { id: '52001', categoryId: '52000', name: '双性', symbol: '⚤', description: '生理上同时具有男性和女性特征的个体' },
+  { id: '52002', categoryId: '52000', name: '酷儿', symbol: '🏳️‍🌈', description: '女性个体表现出传统上与男性相关联的行为特征' },
+  { id: '52003', categoryId: '52000', name: '两性', symbol: '⚥', description: '个体在不同时间或情境下可能认同为男性或女性' },
+  { id: '52004', categoryId: '52000', name: '无性', symbol: '○', description: '个体不认同于任何性别' },
+  { id: '52005', categoryId: '52000', name: '性别流动', symbol: '🌊', description: '个体的性别认同可能随时间或情境而改变' },
   // 传奇
-  { id: 53001, categoryId: 53000, name: '一个', symbol: '1️⃣', description: '我是一个一个一个...' },
-  { id: 53002, categoryId: 53000, name: '武装直升机', symbol: '🚁', description: '哼 想逃?' }
+  { id: '53001', categoryId: '53000', name: '一个', symbol: '1️⃣', description: '我是一个一个一个...' },
+  { id: '53002', categoryId: '53000', name: '武装直升机', symbol: '🚁', description: '哼 想逃?' }
 ]);
 
 // 原始数据备份（用于重置）
-const originalData = reactive<UserInfo>({});
+const originalData = reactive<UserInfo>({
+  user: userStore.getUser(),
+  user_create_date: '',
+  last_sign_in_date: '',
+  user_points: '',
+  user_sex_code: '',
+  user_sex_name: '',
+  user_grjj: ''
+});
 
 // 状态管理
 const isSaving = ref(false);
@@ -418,7 +426,7 @@ const loadUserProfile = async (): Promise<void> => {
 
   // 根据已选择的性别设置类型
   if (profileData.user_sex_code) {
-    const selectedGender = genderOptions.value.find(g => g.id == profileData.user_sex_code);
+    const selectedGender = genderOptions.value.find(g => g.id === profileData.user_sex_code);
     if (selectedGender) {
       selectedGenderCategory.value = selectedGender.categoryId;
     }
@@ -438,7 +446,7 @@ function selectGenderCategory(categoryId) {
   selectedGenderCategory.value = categoryId;
   // 清空已选择的具体性别（如果不属于当前类型）
   if (profileData.user_sex_code) {
-    const currentGender = genderOptions.value.find(g => g.id == profileData.user_sex_code);
+    const currentGender = genderOptions.value.find(g => g.id === profileData.user_sex_code);
     if (!currentGender || currentGender.categoryId !== categoryId) {
       profileData.user_sex_code = '';
     }
@@ -507,7 +515,7 @@ function handleAvatarChange(event) {
   // 创建预览
   const reader = new FileReader();
   reader.onload = (e) => {
-    profileData.user.user_img.file_url = e.target.result;
+    profileData.user.user_img.file_url = e.target.result as string;
   };
   reader.readAsDataURL(file);
 }
@@ -559,7 +567,7 @@ function resetForm() {
   Object.assign(profileData, { ...originalData });
   // 重置性别类型选择
   if (profileData.user_sex_code) {
-    const selectedGender = genderOptions.value.find(g => g.id == profileData.user_sex_code);
+    const selectedGender = genderOptions.value.find(g => g.id === profileData.user_sex_code);
     if (selectedGender) {
       selectedGenderCategory.value = selectedGender.categoryId;
     }
