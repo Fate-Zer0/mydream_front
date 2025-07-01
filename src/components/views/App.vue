@@ -51,8 +51,8 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { useUserStore } from "/src/components/stores/user";
-import { useAlertStore } from "../stores/alert";
+import { useUserStore } from "/src/components/ts/stores/user";
+import { useAlertStore } from "../ts/stores/alert";
 import { computed } from "vue";
 import Pet from "./module/pet/Pet.vue";
 

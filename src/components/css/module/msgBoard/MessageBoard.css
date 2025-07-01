@@ -1,0 +1,103 @@
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #6366f1, #8b5cf6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #4f46e5, #7c3aed);
+}
+
+/* 输入框焦点效果 */
+.textarea:focus {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* 优化后的留言卡片动画 - 去除抖动，保留放大 */
+.message-card {
+    animation: fadeInUp 0.5s ease-out;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.message-card:hover {
+    transform: scale(1.02);
+}
+
+/* 按钮悬浮效果优化 */
+.btn:hover:not(.btn-disabled) {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-out;
+}
+
+/* 头像悬浮效果 */
+.avatar .w-12:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s ease-out;
+}
+
+/* 加载动画 */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 渐入动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 去除不必要的变换效果 */
+.card:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease-out;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .message-card:hover {
+        transform: scale(1.01); /* 移动端减少放大效果 */
+    }
+}
+
+/* 平滑的色彩过渡 */
+.btn-ghost:hover {
+    transition: color 0.2s ease-out;
+}
+
+/* 优化表单输入框过渡 */
+.textarea {
+    transition: border-color 0.3s ease-out, box-shadow 0.3s ease-out;
+}

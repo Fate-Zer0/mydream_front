@@ -1,0 +1,124 @@
+/* FAQ内容展开动画 */
+.faq-content-enter-active,
+.faq-content-leave-active {
+    transition: all 0.3s ease;
+}
+
+.faq-content-enter-from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+}
+
+.faq-content-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+}
+
+.faq-content-enter-to,
+.faq-content-leave-from {
+    opacity: 1;
+    max-height: 200px;
+    transform: translateY(0);
+}
+
+/* 按钮旋转动画 */
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #6366f1, #8b5cf6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #4f46e5, #7c3aed);
+}
+
+/* 卡片悬浮效果 */
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* 按钮悬浮效果 */
+.btn:hover:not(.btn-disabled) {
+    transform: translateY(-1px);
+}
+
+/* 渐变文字效果 */
+.bg-clip-text {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 搜索框焦点效果 */
+.input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* 选择框和文本域焦点效果 */
+.select:focus,
+.textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* 步骤编号动画 */
+.rounded-full:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* 装饰性背景动画增强 */
+.group:hover .absolute {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(-8px) translateX(8px) scale(1);
+    }
+    50% {
+        transform: translateY(-12px) translateX(12px) scale(1.1);
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .text-4xl {
+        font-size: 2.5rem;
+    }
+
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* 禁用按钮样式 */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    transform: none;
+}

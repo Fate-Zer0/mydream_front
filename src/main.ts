@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 import './style.css'
 
 // 引入 Vue Router 实例（假设 loginRouter 是导出的 router 实例）
-import router from './components/router/login/LoginRouter'
+import router from './components/ts/router/login/LoginRouter'
 
 // 引入根组件
 import App from './components/views/App.vue'

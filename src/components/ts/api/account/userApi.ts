@@ -1,6 +1,6 @@
 import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
-import type {UserInfo} from "../../type/UserInfo.ts";
+import type {UserInfo} from "../../type/UserInfo";
 /**
  * 接口服务模块
  */
@@ -49,6 +49,26 @@ export default {
         });
     },
 
+    /**
+     * 更新用户信息
+     * @param userid - 用户ID
+     */
+    updateUserInfo(userInfo: UserInfo): Promise<ReturnValue<Boolean>> {
+        return request.post("/account/user/updateUserInfo", userInfo, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    },
+
+    updateUserImg(userid: string, file: File): Promise<ReturnValue<Boolean>> {
+        const formData = new FormData();
+        formData.append("user_id", userid);
+        formData.append("file", file);
+        return request.post("/account/user/updateUserImg", formData, {
+
+        });
+    }
 };
 
 export type SignInInfo = {

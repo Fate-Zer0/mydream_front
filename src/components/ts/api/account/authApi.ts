@@ -1,6 +1,6 @@
 import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
-import type {User} from "../../type/User.ts";
+import type {User} from "../../type/User";
 
 /**
  * 接口服务模块

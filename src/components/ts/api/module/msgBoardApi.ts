@@ -1,6 +1,6 @@
 import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
-import type {MsgBoard} from "../../type/MsgBoard.ts";
+import type {MsgBoard} from "../../type/MsgBoard";
 
 export default {
     /**

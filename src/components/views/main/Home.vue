@@ -333,7 +333,6 @@
 					</div>
 				</div>
 			</div>
-<!--      <pet />-->
 		</div>
 
 		<!-- 👇 侧边抽屉菜单 -->
@@ -343,14 +342,13 @@
 
 <script setup>
 import { onMounted, nextTick, ref } from "vue";
-import { useUserStore } from "../../stores/user";
-import { useCarousel } from "../../composables/useCarousel";
-import { useHomeProcess } from "../../process/home/HomeProcess";
-import { signInInfoCalendar } from "../../composables/signInInfoCalendar";
+import { useUserStore } from "../../ts/stores/user";
+import { useCarousel } from "../../ts/composables/useCarousel";
+import { useHomeProcess } from "../../ts/process/home/HomeProcess";
+import { signInInfoCalendar } from "../../ts/composables/signInInfoCalendar";
 import Calendar from "../components/signInInfoCalendar.vue";
 import Header from "../components/homeHead.vue";
 import SideDrawer from "../components/homeSideDrawer.vue";
-import Pet from "../module/pet/Pet.vue"
 
 const userStore = useUserStore();
 
@@ -446,160 +444,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 警告框动画优化 */
-@keyframes slide-down {
-	0% {
-		top: -100px;
-		opacity: 0;
-		transform: translateX(-50%) scale(0.9);
-	}
-	50% {
-		top: 70px;
-		opacity: 0.8;
-		transform: translateX(-50%) scale(1.05);
-	}
-	100% {
-		top: 80px;
-		opacity: 1;
-		transform: translateX(-50%) scale(1);
-	}
-}
-
-.animate-slide-down {
-	animation: slide-down 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.alert-top-fixed {
-	position: fixed;
-	top: 80px;
-	left: 50%;
-	transform: translateX(-50%);
-	z-index: 50;
-	max-width: 28rem;
-	margin: 0 1rem;
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-	border-radius: 1rem;
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-	width: 8px;
-}
-
-::-webkit-scrollbar-track {
-	background: #f1f5f9;
-	border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-	background: linear-gradient(180deg, #6366f1, #8b5cf6);
-	border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-	background: linear-gradient(180deg, #4f46e5, #7c3aed);
-}
-
-/* 轮播图指示器样式 */
-.carousel-slide .w-3.h-3 {
-	background: rgba(255, 255, 255, 0.4);
-}
-
-.carousel-slide .w-3.h-3.bg-white {
-	background: white !important;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* 卡片悬浮效果 */
-.card:hover {
-	transform: translateY(-2px);
-}
-
-/* 按钮悬浮效果 */
-.btn:hover:not(.btn-disabled) {
-	transform: translateY(-1px);
-}
-
-/* 头像悬浮效果增强 */
-.avatar .w-24:hover {
-	transform: scale(1.1) rotate(2deg);
-}
-
-/* 状态指示器动画 */
-.indicator-item .animate-pulse {
-	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* 徽章悬浮效果 */
-.badge:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* 统计卡片悬浮效果 */
-.stats:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* 弹窗动画 */
-.calendar-fade-enter-active,
-.calendar-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.calendar-fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px)  scale(0.95);
-}
-
-.calendar-fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px)  scale(0.95);
-}
-
-.calendar-fade-enter-to,
-.calendar-fade-leave-from {
-  opacity: 1;
-  transform: translateY(0)  scale(1);
-}
-
-/* 确保弹窗在最顶层 */
-.z-\[9999\] {
-  z-index: 9999;
-}
-
-/* 弹窗阴影效果 */
-.shadow-2xl {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* 毛玻璃效果 */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-}
-
-/* 加载动画 */
-.loading-spinner {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* 响应式调整 */
-@media (max-width: 480px) {
-  .w-80 {
-    width: calc(100vw - 2rem);
-    max-width: 320px;
-  }
-}
+@import "../../css/main/Home.css";
 </style>

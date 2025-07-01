@@ -79,8 +79,8 @@
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from "../../stores/user";
-import {useHomeProcess} from "../../process/home/HomeProcess";
+import { useUserStore } from "../../ts/stores/user";
+import {useHomeProcess} from "../../ts/process/home/HomeProcess";
 
 const userStore = useUserStore();
 

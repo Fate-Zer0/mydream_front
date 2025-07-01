@@ -81,7 +81,7 @@
 
 <script setup>
 import {ref, computed, watch, onBeforeUnmount} from 'vue'
-import { useUserStore } from "../../stores/user";
+import { useUserStore } from "../../ts/stores/user";
 
 // Props 定义
 const props = defineProps({
@@ -361,59 +361,5 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 组件样式 */
-.calendar-component {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* 日期格子悬停效果 */
-.cursor-pointer:hover {
-  transform: scale(1.05);
-}
-
-/* 渐变背景动画 */
-.bg-gradient-to-br {
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-/* 响应式设计 */
-@media (max-width: 320px) {
-  .w-8 {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
-  .text-sm {
-    font-size: 0.75rem;
-  }
-}
-
-/* 深色模式优化 */
-@media (prefers-color-scheme: dark) {
-  .calendar-component {
-    color-scheme: dark;
-  }
-}
-
-/* 打印样式 */
-@media print {
-  .calendar-component {
-    background: white !important;
-    color: black !important;
-  }
-
-  button {
-    display: none;
-  }
-}
+@import '../../css/components/signInInfoCalendar.css';
 </style>

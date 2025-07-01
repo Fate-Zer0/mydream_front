@@ -26,7 +26,7 @@
                 <div class="avatar indicator mb-6">
                   <div class="ring-primary ring-offset-base-100 hover:ring-secondary h-32 w-32 rounded-full shadow-xl ring-4 ring-offset-4 transition-all duration-500 hover:scale-110 hover:shadow-2xl">
                     <img
-                        :src="userStore.getUserimg().file_url || 'https://picsum.photos/200'"
+                        :src="profileData.user.user_img.file_url || 'https://picsum.photos/200'"
                         alt="用户头像"
                         class="h-full w-full rounded-full object-cover transition-all duration-300 hover:brightness-110"
                     />
@@ -37,7 +37,7 @@
 
                 <!-- 用户名显示 -->
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">
-                  {{ userStore.getUsername() || "用户名" }}
+                  {{ profileData.user.user_name || "用户名" }}
                 </h2>
 
                 <!-- 个性签名显示 -->
@@ -96,7 +96,7 @@
                     <div class="flex items-center gap-4">
                       <div class="avatar">
                         <div class="w-16 h-16 rounded-full ring-2 ring-gray-200">
-                          <img :src="userStore.getUserimg().file_url || 'https://picsum.photos/200'" alt="预览头像" />
+                          <img :src="profileData.user.user_img.file_url || 'https://picsum.photos/200'" alt="预览头像" />
                         </div>
                       </div>
                       <div class="flex-1">
@@ -326,10 +326,11 @@
 import { ref, reactive, onMounted } from 'vue';
 import Header from '../components/homeHead.vue';
 import SideDrawer from '../components/homeSideDrawer.vue';
-import {useUserStore} from "../../stores/user";
-import {withRequest} from "../../composables/useRequest";
-import api from "../../api/api";
-import type {UserInfo} from "../../type/UserInfo.ts";
+import {useUserStore} from "../../ts/stores/user";
+import {withRequest} from "../../ts/composables/useRequest";
+import api from "../../ts/api/api";
+import type {UserInfo} from "../../ts/type/UserInfo.ts";
+import {useAlertStore} from "../../ts/stores/alert.ts";
 
 const userStore = useUserStore();
 
@@ -397,7 +398,7 @@ const genderOptions = ref([
 
 // 原始数据备份（用于重置）
 const originalData = reactive<UserInfo>({
-  user: userStore.getUser(),
+  user: null,
   user_create_date: '',
   last_sign_in_date: '',
   user_points: '',
@@ -496,28 +497,50 @@ function getSelectedIndicatorStyle() {
 }
 
 // 处理头像上传
-function handleAvatarChange(event) {
+async function handleAvatarChange(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   // 文件大小检查
   if (file.size > 2 * 1024 * 1024) {
-    alert('文件大小不能超过 2MB');
+    useAlertStore().showAlertWithAutoHide(
+        "alert-warning",
+        "文件大小不能超过 2MB!",
+    );
     return;
   }
 
   // 文件类型检查
   if (!file.type.startsWith('image/')) {
-    alert('请选择图片文件');
+    useAlertStore().showAlertWithAutoHide(
+        "alert-warning",
+        "请选择图片文件",
+    );
     return;
   }
 
-  // 创建预览
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    profileData.user.user_img.file_url = e.target.result as string;
-  };
-  reader.readAsDataURL(file);
+  try {
+    const userId = useUserStore().getUserid();
+    const res = await api.account.user.updateUserImg(userId,file);
+
+    if (res.retCode === "0000") {
+      // 本地预览
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (profileData?.user?.user_img) {
+          profileData.user.user_img.file_url = e.target.result as string;
+        }
+      };
+      reader.readAsDataURL(file);
+      userStore.setUserimg(profileData.user.user_img);
+      useAlertStore().showAlertWithAutoHide("alert-success", "成功: 头像修改成功!");
+    } else {
+      useAlertStore().showAlertWithAutoHide("alert-danger", "失败: 请联系管理员!");
+    }
+
+  } catch (error) {
+    useAlertStore().showAlertWithAutoHide("alert-danger", "网络异常，请稍后重试");
+  }
 }
 
 // 提交表单
@@ -541,22 +564,27 @@ async function handleSubmit() {
   isSaving.value = true;
 
   try {
-    // 模拟 API 调用
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // 更新原始数据
-    Object.assign(originalData, { ...profileData });
-
-    // 显示成功提示
-    showSuccessAlert.value = true;
-    setTimeout(() => {
-      showSuccessAlert.value = false;
-    }, 3000);
-
-    console.log('保存的数据:', profileData);
+    const res = await withRequest(() => api.account.user.updateUserInfo(profileData));
+    if (res.retCode == "0000") {
+      // 更新原始数据
+      Object.assign(originalData, { ...profileData });
+      userStore.setUsername(profileData.user.user_name);
+      // 显示成功提示
+      useAlertStore().showAlertWithAutoHide(
+          "alert-success",
+          "成功: 修改成功!",
+      );
+    }else{
+      useAlertStore().showAlertWithAutoHide(
+          "alert-danger",
+          "失败: 请联系管理员!",
+      );
+    }
   } catch (error) {
-    console.error('保存失败:', error);
-    alert('保存失败，请重试');
+    useAlertStore().showAlertWithAutoHide(
+        "alert-danger",
+        "失败: 请联系管理员!",
+    );
   } finally {
     isSaving.value = false;
   }
@@ -588,131 +616,5 @@ function formatDate(date) {
 </script>
 
 <style scoped>
-/* 警告框动画 */
-@keyframes slide-down {
-  0% {
-    top: -100px;
-    opacity: 0;
-    transform: translateX(-50%) scale(0.9);
-  }
-  50% {
-    top: 70px;
-    opacity: 0.8;
-    transform: translateX(-50%) scale(1.05);
-  }
-  100% {
-    top: 80px;
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-}
-
-.animate-slide-down {
-  animation: slide-down 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.alert-top-fixed {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  max-width: 28rem;
-  margin: 0 1rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border-radius: 1rem;
-}
-
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #6366f1, #8b5cf6);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #4f46e5, #7c3aed);
-}
-
-/* 卡片悬浮效果 */
-.card:hover {
-  transform: translateY(-2px);
-}
-
-/* 表单元素悬浮效果 */
-.input:focus,
-.textarea:focus {
-  transform: translateY(-1px);
-}
-
-/* 头像悬浮效果 */
-.avatar .w-32:hover {
-  transform: scale(1.1) rotate(2deg);
-}
-
-/* 按钮悬浮效果 */
-.btn:hover:not(.btn-disabled) {
-  transform: translateY(-1px);
-}
-
-/* 单选框标签悬浮效果 */
-.label:hover {
-  transform: translateY(-1px);
-}
-
-/* 文件输入框样式优化 */
-.file-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-}
-
-/* 优化的多元化性别选项效果 */
-.rainbow-glow {
-  position: relative;
-  overflow: hidden;
-}
-
-.rainbow-glow::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #a855f7, #ec4899, #f97316, #eab308, #22c55e, #06b6d4, #3b82f6, #8b5cf6);
-  border-radius: 0.75rem;
-  z-index: -1;
-  opacity: 0.6;
-  filter: blur(1px);
-}
-
-/* 传奇性别选项效果 */
-.legendary-glow {
-  position: relative;
-  overflow: hidden;
-}
-
-.legendary-glow::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706, #b45309);
-  border-radius: 0.75rem;
-  z-index: -1;
-  opacity: 0.8;
-  filter: blur(0.5px);
-}
+@import "../../css/main/MyInfo.css";
 </style>

@@ -1,6 +1,5 @@
 import {useUserStore} from "../stores/user";
 import {useAlertStore} from "../stores/alert";
-import axios from "axios";
 import {onBeforeUnmount,onMounted,ref} from "vue";
 import {withRequest} from "./useRequest";
 import api from "../api/api";
