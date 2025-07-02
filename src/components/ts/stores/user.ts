@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
-import type { User } from "../type/User";
-import type { File } from "../type/File";
+import type {User} from "../type/User";
+import type {FileInfo} from "../type/FileInfo";
 
 export const useUserStore = defineStore("user", {
 	state: (): User => ({
@@ -10,7 +10,7 @@ export const useUserStore = defineStore("user", {
 		user_img: null,
 	}),
 	actions: {
-		setUserInfo(userid: string, username: string, user_img: File) {
+		setUserInfo(userid: string, username: string, user_img: FileInfo) {
 			this.user_id = userid;
 			this.user_name = username;
 			this.user_img = user_img;
@@ -21,7 +21,7 @@ export const useUserStore = defineStore("user", {
 		setUsername(username: string) {
 			this.user_name = username;
 		},
-		setUserimg(user_img: File) {
+		setUserimg(user_img: FileInfo) {
 			this.user_img = user_img;
 		},
 		getUserid() {
@@ -33,7 +33,7 @@ export const useUserStore = defineStore("user", {
 		getUserimg() {
 			return this.user_img;
 		},
-		getUser() {
+		getUser(){
 			return {
 				user_id: this.user_id,
 				user_name: this.user_name,

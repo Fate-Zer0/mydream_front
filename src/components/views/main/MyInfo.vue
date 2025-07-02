@@ -511,8 +511,8 @@ import SideDrawer from "../components/homeSideDrawer.vue";
 import { useUserStore } from "../../ts/stores/user";
 import { withRequest } from "../../ts/composables/useRequest";
 import api from "../../ts/api/api";
-import type { UserInfo } from "../../ts/type/UserInfo.ts";
-import { useAlertStore } from "../../ts/stores/alert.ts";
+import type {UserInfo} from "../../ts/type/UserInfo";
+import {useAlertStore} from "../../ts/stores/alert";
 
 const userStore = useUserStore();
 
@@ -770,34 +770,26 @@ async function handleAvatarChange(event) {
 		const userId = useUserStore().getUserid();
 		const res = await api.account.user.updateUserImg(userId, file);
 
-		if (res.retCode === "0000") {
-			// 本地预览
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				if (profileData?.user?.user_img) {
-					profileData.user.user_img.file_url = e.target
-						.result as string;
-				}
-			};
-			reader.readAsDataURL(file);
-			userStore.setUserimg(profileData.user.user_img);
-			userStore.setStorageUser();
-			useAlertStore().showAlertWithAutoHide(
-				"alert-success",
-				"成功: 头像修改成功!",
-			);
-		} else {
-			useAlertStore().showAlertWithAutoHide(
-				"alert-danger",
-				"失败: 请联系管理员!",
-			);
-		}
-	} catch (error) {
-		useAlertStore().showAlertWithAutoHide(
-			"alert-danger",
-			"网络异常，请稍后重试",
-		);
-	}
+    if (res.retCode === "0000") {
+      const n_file = res.retValue;
+      // 本地预览
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (profileData?.user?.user_img) {
+          profileData.user.user_img.file_url = e.target.result as string;
+        }
+      };
+      reader.readAsDataURL(file);
+      userStore.setUserimg(n_file);
+      userStore.setStorageUser();
+      useAlertStore().showAlertWithAutoHide("alert-success", "成功: 头像修改成功!");
+    } else {
+      useAlertStore().showAlertWithAutoHide("alert-danger", "失败: 请联系管理员!");
+    }
+
+  } catch (error) {
+    useAlertStore().showAlertWithAutoHide("alert-danger", "网络异常，请稍后重试");
+  }
 }
 
 // 提交表单

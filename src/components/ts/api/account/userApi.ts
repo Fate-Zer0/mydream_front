@@ -1,6 +1,7 @@
 import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
 import type {UserInfo} from "../../type/UserInfo";
+import type {FileInfo} from "../../type/FileInfo";
 /**
  * 接口服务模块
  */
@@ -61,13 +62,11 @@ export default {
         });
     },
 
-    updateUserImg(userid: string, file: File): Promise<ReturnValue<Boolean>> {
+    updateUserImg(userid: string, file: File): Promise<ReturnValue<FileInfo>> {
         const formData = new FormData();
         formData.append("user_id", userid);
         formData.append("file", file);
-        return request.post("/account/user/updateUserImg", formData, {
-
-        });
+        return request.post("/account/user/updateUserImg", formData, );
     }
 };
 
