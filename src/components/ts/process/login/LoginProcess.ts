@@ -35,7 +35,9 @@ export function useLoginForm() {
 				user_img: null,
 			};
 
-			const res = await withRequest(() => api.account.auth.chickLogin(user));
+			const res = await withRequest(() =>
+				api.account.auth.chickLogin(user),
+			);
 
 			if (res?.retValue) {
 				if (res.retCode == "0000") {
@@ -47,11 +49,7 @@ export function useLoginForm() {
 						userStore.setUserimg(userinfo.user_img);
 					}
 
-					if (rememberMe.value) {
-						userStore.setLocalUser();
-					} else {
-						userStore.setSessionUser();
-					}
+					userStore.setStorageUser(rememberMe.value);
 
 					alertType.value = "alert-success";
 					alertMessage.value = "成功: 登陆成功,即将跳转到首页!";

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
-import type {User} from "../type/User";
-import type {File} from "../type/File";
+import type { User } from "../type/User";
+import type { File } from "../type/File";
 
 export const useUserStore = defineStore("user", {
 	state: (): User => ({
@@ -33,7 +33,7 @@ export const useUserStore = defineStore("user", {
 		getUserimg() {
 			return this.user_img;
 		},
-		getUser(){
+		getUser() {
 			return {
 				user_id: this.user_id,
 				user_name: this.user_name,
@@ -51,37 +51,46 @@ export const useUserStore = defineStore("user", {
 			}
 			return false;
 		},
-		setLocalUser() {
-			console.log("setLocalUser", {
-				id: this.user_id,
-				name: this.user_name,
-				img: this.user_img,
-			});
-			localStorage.setItem(
-				"user",
-				JSON.stringify({
-					user_id: this.user_id,
-					user_name: this.user_name,
-					user_pw: '',
-					user_img: this.user_img,
-				}),
-			);
-		},
-		setSessionUser() {
-			console.log("setSessionUser", {
-				id: this.user_id,
-				name: this.user_name,
-				img: this.user_img,
-			});
-			sessionStorage.setItem(
-				"user",
-				JSON.stringify({
-					user_id: this.user_id,
-					user_name: this.user_name,
-					user_pw: '',
-					user_img: this.user_img,
-				}),
-			);
+		setStorageUser(local?: boolean) {
+			let p =
+				local === undefined
+					? localStorage.getItem("user")
+						? true
+						: false
+					: local;
+			localStorage.removeItem("user");
+			sessionStorage.removeItem("user");
+			if (p === true) {
+				console.log("setLocalUser", {
+					id: this.user_id,
+					name: this.user_name,
+					img: this.user_img,
+				});
+				localStorage.setItem(
+					"user",
+					JSON.stringify({
+						user_id: this.user_id,
+						user_name: this.user_name,
+						user_pw: "",
+						user_img: this.user_img,
+					}),
+				);
+			} else {
+				console.log("setSessionUser", {
+					id: this.user_id,
+					name: this.user_name,
+					img: this.user_img,
+				});
+				sessionStorage.setItem(
+					"user",
+					JSON.stringify({
+						user_id: this.user_id,
+						user_name: this.user_name,
+						user_pw: "",
+						user_img: this.user_img,
+					}),
+				);
+			}
 		},
 		logout() {
 			this.user_id = "";
