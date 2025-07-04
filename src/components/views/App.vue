@@ -78,6 +78,9 @@ router.beforeEach((to, from, next) => {
 			}
 			next();
 			break;
+		case "ForgetPassword":
+			next();
+			break;
 		default:
 			if (!userStore.getUserid()) {
         console.log(userStore.getUserid());

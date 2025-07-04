@@ -466,18 +466,24 @@
 								<p class="mb-4 text-gray-600">
 									以下操作将会永久性地影响您的账户，请谨慎操作。
 								</p>
-								<div class="flex gap-3">
-									<button
-										class="btn btn-outline btn-warning rounded-xl"
-									>
-										🔐 修改密码
-									</button>
-									<button
-										class="btn btn-outline btn-error rounded-xl"
-									>
-										🗑️ 删除账户
-									</button>
-								</div>
+                <div class="flex gap-3">
+                  <button
+                      class="btn btn-outline btn-info rounded-xl"
+                      onclick="location.href='/securityQuestion'"
+                  >
+                    ⚙️ 设置密保
+                  </button>
+                  <button
+                      class="btn btn-outline btn-warning rounded-xl"
+                  >
+                    🔐 修改密码
+                  </button>
+                  <button
+                      class="btn btn-outline btn-error rounded-xl"
+                  >
+                    🗑️ 删除账户
+                  </button>
+                </div>
 							</div>
 						</div>
 					</div>

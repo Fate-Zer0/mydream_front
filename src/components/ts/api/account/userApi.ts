@@ -2,6 +2,7 @@ import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
 import type {UserInfo} from "../../type/UserInfo";
 import type {FileInfo} from "../../type/FileInfo";
+import type {UserSerQuestion} from "../../type/UserSerQuestion.ts";
 /**
  * 接口服务模块
  */
@@ -67,7 +68,42 @@ export default {
         formData.append("user_id", userid);
         formData.append("file", file);
         return request.post("/account/user/updateUserImg", formData, );
-    }
+    },
+
+    updateUserSecQuestion(userSerQuestions: UserSerQuestion[]): Promise<ReturnValue<String>>{
+        return request.post("/account/user/updateUserSecQuestion", userSerQuestions, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    },
+
+    getUserSecQuestion(userid: string): Promise<ReturnValue<UserSerQuestion[]>>{
+        return request.get("/account/user/getUserSecQuestion", {
+            params: { user_id: userid },
+        });
+    },
+
+    getUserSecQuestionNoAnswer(username: string): Promise<ReturnValue<UserSerQuestion[]>>{
+        return request.get("/account/user/getUserSecQuestionNoAnswer", {
+            params: { user_name: username },
+        });
+    },
+
+    checkAnswer(secq_id: string,answer: string): Promise<ReturnValue<Boolean>> {
+        return request.get("/account/user/checkAnswer", {
+            params: {secq_id:secq_id , answer: answer },
+        });
+    },
+
+    updateUserPassword(user_name: string, new_password: string): Promise<ReturnValue<Boolean>>{
+        const formData = new FormData();
+        formData.append("user_name", user_name);
+        formData.append("password", new_password);
+        return request.post("/account/user/updateUserPassword", formData, );
+    },
+
+
 };
 
 export type SignInInfo = {

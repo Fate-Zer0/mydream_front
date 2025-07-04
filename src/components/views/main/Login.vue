@@ -337,8 +337,8 @@
 							<span class="label-text">记住我</span>
 						</label>
 						<a
-							href="#"
 							class="link link-hover link-primary font-medium"
+              href="/forgetPassword"
 							>忘记密码？</a
 						>
 					</div>

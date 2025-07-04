@@ -1,6 +1,7 @@
 import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
 import type {User} from "../../type/User";
+import type {SignInInfo} from "./userApi.ts";
 
 /**
  * 接口服务模块
@@ -29,4 +30,14 @@ export default {
             },
         });
     },
+
+    //chickUsernameIsHave
+
+    chickUsernameIsHave(user_name: string): Promise<ReturnValue<Boolean>> {
+        return request.get("/account/auth/chickUsernameIsHave", {
+            params: { user_name: user_name },
+        });
+    },
+
+
 };

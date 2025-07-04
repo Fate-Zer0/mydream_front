@@ -35,6 +35,16 @@ const routes: RouteRecordRaw[] = [
 		name: "Myinfo",
 		component: () => import("../../../views/main/MyInfo.vue"),
 	},
+	{
+		path: "/securityQuestion",
+		name: "SecurityQuestion",
+		component: () => import("../../../views/main/SecurityQuestion.vue"),
+	},
+	{
+		path: "/forgetPassword",
+		name: "ForgetPassword",
+		component: () => import("../../../views/main/ForgetPassword.vue"),
+	},
 ];
 
 export const loginRouter = createRouter({
