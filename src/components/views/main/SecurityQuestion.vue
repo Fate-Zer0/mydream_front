@@ -426,12 +426,12 @@ const loadSecurityQuestions = async (): Promise<void> => {
 
     const res = await withRequest(() => api.account.user.getUserSecQuestion(userStore.getUserid()));
     if (res.retCode === "0000" && Array.isArray(res.retValue)) {
-      // 接口返回的是 List<UserSerQuestion>，对应 TS 中的 UserSerQuestion[]
+      // ✅ 正确赋值给 reactive 数组
       Object.assign(securityQuestions, res.retValue);
-      // 如果数量不足 3 条，补足
-      while (securityQuestions.value.length < 3) {
-        securityQuestions.value.push({
-          user: userStore.getUser(), // 当前用户对象
+      // 如果不足3条，补足
+      while (securityQuestions.length < 3) {
+        securityQuestions.push({
+          user: userStore.getUser(),
           secq_id: "",
           question: "",
           answer: "",
@@ -439,10 +439,26 @@ const loadSecurityQuestions = async (): Promise<void> => {
           state: ""
         });
       }
-
     } else {
-      // 接口无数据时，默认填充 3 个空对象
-      securityQuestions.value = Array(3).fill({
+      // 初始化默认 3 条
+      securityQuestions.splice(0);
+      for (let i = 0; i < 3; i++) {
+        securityQuestions.push({
+          user: userStore.getUser(),
+          secq_id: "",
+          question: "",
+          answer: "",
+          createtime: "",
+          state: ""
+        });
+      }
+    }
+  } catch (error) {
+    console.error("获取密保问题失败", error);
+    // 出现异常也填充默认值
+    securityQuestions.splice(0);
+    for (let i = 0; i < 3; i++) {
+      securityQuestions.push({
         user: userStore.getUser(),
         secq_id: "",
         question: "",
@@ -451,17 +467,6 @@ const loadSecurityQuestions = async (): Promise<void> => {
         state: ""
       });
     }
-  } catch (error) {
-    console.error("获取密保问题失败", error);
-    // 出现异常也填充默认值
-    securityQuestions.value = Array(3).fill({
-      user: userStore.getUser(),
-      secq_id: "",
-      question: "",
-      answer: "",
-      createtime: "",
-      state: ""
-    });
   }
    Object.assign(originalQuestions, securityQuestions);
 };
