@@ -51,6 +51,10 @@ export function useLoginForm() {
 
 					userStore.setStorageUser(rememberMe.value);
 
+					await withRequest(() =>
+						api.account.user.updateUserStatus(userStore.getUser(),"20002"),
+					);
+
 					alertType.value = "alert-success";
 					alertMessage.value = "成功: 登陆成功,即将跳转到首页!";
 					showAlert.value = true;

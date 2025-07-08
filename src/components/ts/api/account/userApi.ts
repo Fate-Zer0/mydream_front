@@ -2,7 +2,8 @@ import request from "../../utils/request";
 import type { ReturnValue } from "../../type/ReturnValue";
 import type {UserInfo} from "../../type/UserInfo";
 import type {FileInfo} from "../../type/FileInfo";
-import type {UserSerQuestion} from "../../type/UserSerQuestion.ts";
+import type {UserSerQuestion} from "../../type/UserSerQuestion";
+import type {User} from "../../type/User";
 /**
  * 接口服务模块
  */
@@ -103,6 +104,25 @@ export default {
         return request.post("/account/user/updateUserPassword", formData, );
     },
 
+    updateUserStatus(user: User,user_status_code: string): Promise<ReturnValue<Boolean>>{
+        const userInfo : UserInfo = {
+            user: user,
+            user_status_code: user_status_code,
+            user_status_name: "",
+            user_points: "",
+            user_sex_code: "",
+            user_sex_name: "",
+            user_grjj: "",
+            user_create_date: "",
+            last_sign_in_date: ""
+        }
+
+        return request.post("/account/user/updateUserStatus", userInfo, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    },
 
 };
 

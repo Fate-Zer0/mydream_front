@@ -100,7 +100,7 @@ const props = defineProps({
     required: true,
     default: () => [
       { title: '首页', href: '/home', icon: '🏠' },
-      { title: '留言板', href: '/messageBoard', icon: '📊' },
+      { title: '留言板', href: '/messageBoard', icon: '💬' },
       { title: '系统设置', href: '/settings', icon: '⚙️' },
       { title: '帮助支持', href: '/help', icon: '❓' }
     ]

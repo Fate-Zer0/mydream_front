@@ -5,24 +5,38 @@
       <div class="card-body p-6">
         <!-- 用户信息 -->
         <div class="flex items-start gap-4">
+          <!-- 用户头像 - 包装在 UserInfoCard 中 -->
           <div class="avatar flex-shrink-0">
-            <div class="w-12 h-12 rounded-2xl ring-2 ring-gray-200 ring-offset-2 ring-offset-white overflow-hidden transition-all duration-300 hover:ring-indigo-300 hover:scale-110">
-              <img
-                  :src="
-                        item.user?.user_img?.file_url ||
-                        'https://picsum.photos/200'
-                        "
-                  :alt="item.user.user_name" class="object-cover" />
-            </div>
+            <UserInfoCard
+                :user-id="item.user.user_id"
+                @addFriend="handleAddFriend"
+                @sendMessage="handleSendMessage"
+            >
+              <div class="w-12 h-12 rounded-2xl ring-2 ring-gray-200 ring-offset-2 ring-offset-white overflow-hidden transition-all duration-300 hover:ring-indigo-300 hover:scale-110">
+                <img
+                    :src="item.user?.user_img?.file_url || 'https://picsum.photos/200'"
+                    :alt="item.user.user_name"
+                    class="object-cover"
+                />
+              </div>
+            </UserInfoCard>
           </div>
 
           <div class="flex-1 min-w-0">
             <!-- 留言头部信息 -->
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
-                <h4 class="font-semibold text-gray-800 hover:text-indigo-600 transition-colors cursor-pointer">
-                  {{ item.user.user_name }}
-                </h4>
+                <!-- 用户名 - 也可以触发用户卡片 -->
+                <UserInfoCard
+                    :user-id="item.user.user_id"
+                    @addFriend="handleAddFriend"
+                    @sendMessage="handleSendMessage"
+                >
+                  <h4 class="font-semibold text-gray-800 hover:text-indigo-600 transition-colors cursor-pointer">
+                    {{ item.user.user_name }}
+                  </h4>
+                </UserInfoCard>
+
                 <div v-if="item.user.user_id === currentUser.user_id" class="badge badge-primary badge-sm">
                   我
                 </div>
@@ -112,11 +126,10 @@
                 <div class="avatar flex-shrink-0">
                   <div class="w-8 h-8 rounded-xl overflow-hidden">
                     <img
-                        :src="
-                        currentUser.user_img?.file_url ||
-                        'https://picsum.photos/200'
-                        "
-                        :alt="currentUser.user_name" class="object-cover" />
+                        :src="currentUser.user_img?.file_url || 'https://picsum.photos/200'"
+                        :alt="currentUser.user_name"
+                        class="object-cover"
+                    />
                   </div>
                 </div>
                 <div class="flex-1">
@@ -173,6 +186,8 @@
               :is-reply="true"
               @reply="(id, content, author) => $emit('reply', id, content, author)"
               @like="(id) => $emit('like', id)"
+              @addFriend="(userId) => $emit('addFriend', userId)"
+              @sendMessage="(userId) => $emit('sendMessage', userId)"
               class="pl-12"
           />
         </div>
@@ -183,6 +198,7 @@
 
 <script setup>
 import { ref, nextTick, onMounted } from 'vue'
+import UserInfoCard from '../../components/userInfoCard.vue'
 
 const props = defineProps({
   par_id: {
@@ -203,7 +219,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['reply', 'like'])
+const emit = defineEmits(['reply', 'like', 'addFriend', 'sendMessage'])
 
 const showReplyInput = ref(false)
 const replyText = ref('')
@@ -211,6 +227,16 @@ const isSubmittingReply = ref(false)
 const expanded = ref(false)
 const justLiked = ref(false)
 const replyTextarea = ref(null)
+
+// 处理用户卡片的添加好友事件
+function handleAddFriend(userId) {
+  emit('addFriend', userId)
+}
+
+// 处理用户卡片的发送消息事件
+function handleSendMessage(userId) {
+  emit('sendMessage', userId)
+}
 
 // 切换回复输入框
 async function toggleReplyInput() {
@@ -259,21 +285,18 @@ async function handleLike() {
 // 复制留言内容
 function copyMessage() {
   navigator.clipboard.writeText(props.item.msg_content)
-  // TODO: 显示复制成功提示
   console.log('复制成功')
 }
 
 // 删除留言
 function deleteMessage() {
   if (confirm('确定要删除这条留言吗？')) {
-    // TODO: 调用删除API
     console.log('删除留言:', props.item.msg_id)
   }
 }
 
 // 举报留言
 function reportMessage() {
-  // TODO: 打开举报对话框
   console.log('举报留言:', props.item.msg_id)
 }
 

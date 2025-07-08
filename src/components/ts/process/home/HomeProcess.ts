@@ -32,8 +32,13 @@ export function useHomeProcess() {
 	}
 
 	//退出登录
-	function logout() {
+	async function logout() {
 		const userStore = useUserStore();
+
+		await withRequest(() =>
+			api.account.user.updateUserStatus(userStore.getUser(),"20001"),
+		);
+
 		userStore.logout();
 
 		// 3. 跳转到登录页

@@ -84,6 +84,8 @@
                 :current-user="currentUser"
                 @reply="handleReply"
                 @like="toggleLike"
+                @addFriend="handleAddFriend"
+                @sendMessage="handleSendMessage"
             />
           </div>
         </div>
@@ -175,6 +177,7 @@ async function getMsgBoardInfo(userid?: string) {
     messages.value = res.retValue;
   }
 }
+
 // 提交主留言
 const submitMessage = async (): Promise<void> => {
   if (!newMessage.value.trim()) return
@@ -226,7 +229,6 @@ const handleReply = async (parentId: number, replyContent: string, parentAuthor:
 
 // 递归查找并添加回复
 const addReplyToMessage = async (reply: MsgBoard): Promise<void> => {
-
   const res = await withRequest(() => api.module.msgBoard.addMsgBoard(reply));
   if (res.retCode=="0000") {
     newMessage.value = ""
@@ -263,6 +265,32 @@ const toggleLike = async (messageId: number): Promise<void> => {
   }
 }
 
+// 处理添加好友事件
+const handleAddFriend = async (userId: string): Promise<void> => {
+  try {
+    // 调用添加好友API
+    // const res = await withRequest(() => api.module.friend.addFriend(userStore.getUserid(), userId));
+    // if (res.retCode === "0000") {
+    //   showSuccessToast('好友添加成功！');
+    // } else {
+    //   showErrorToast('添加好友失败，请重试');
+    // }
+    showErrorToast('添加好友正在制作中...');
+
+  } catch (error) {
+    console.error('添加好友失败:', error);
+    showErrorToast('添加好友失败，请重试');
+  }
+}
+
+// 处理发送消息事件
+const handleSendMessage = (userId: string): void => {
+  // 跳转到私信页面或打开聊天窗口
+  console.log('发送消息给用户:', userId);
+  // 示例：跳转到私信页面
+  // router.push(`/message/chat/${userId}`);
+}
+
 // 递归查找留言
 function findMessageById(messages: MsgBoard[], id: number): MsgBoard | null {
   for (const msg of messages) {
@@ -275,6 +303,7 @@ function findMessageById(messages: MsgBoard[], id: number): MsgBoard | null {
 
   return null;
 }
+
 // 提示消息函数
 const showSuccessToast = (message: string): void => {
   console.log('Success:', message)

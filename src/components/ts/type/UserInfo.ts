@@ -7,5 +7,7 @@ export type UserInfo = {
     user_points : string,
     user_sex_code : string,
     user_sex_name : string,
-    user_grjj : string
+    user_grjj : string,
+    user_status_code : string
+    user_status_name : string
 };

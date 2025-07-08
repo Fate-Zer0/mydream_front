@@ -282,7 +282,7 @@ import SideDrawer from '../components/homeSideDrawer.vue';
 // 菜单项
 const menuItems = [
   { title: '首页', href: '/home', icon: '🏠' },
-  { title: '留言板', href: '/messageBoard', icon: '📊' },
+  { title: '留言板', href: '/messageBoard', icon: '💬' },
   { title: '系统设置', href: '/settings', icon: '⚙️' },
   { title: '帮助支持', href: '/help', icon: '❓' }
 ];
