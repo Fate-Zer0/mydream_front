@@ -1,29 +1,39 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-// https://vite.dev/config/
+// 获取当前模式下的环境变量
+const mode = process.env.NODE_ENV
+const env = loadEnv(mode, process.cwd())
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    vue()
+    vue(),
+    nodePolyfills({
+      globals: {
+        global: true,
+        Buffer: true,
+        process: true
+      },
+      include: ['buffer', 'process', 'util'],
+      exclude: [],
+    }),
   ],
   server: {
     proxy: {
-      '/api': 'http://162.14.82.204:8085',
+      '/api': {
+        target: env.VITE_API_URL,
+        changeOrigin: true,
+        secure: false
+      },
       '/file': {
-        target: 'http://162.14.82.204:8085',
+        target: env.VITE_API_URL,
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/file/, '') // 去掉 /file 前缀
-      },
-      // '/api': 'http://localhost:8085',
-      // '/file': {
-      //   target: 'http://localhost:8085',
-      //   changeOrigin: true,
-      //   secure: false,
-      //   rewrite: (path) => path.replace(/^\/file/, '') // 去掉 /file 前缀
-      // }
+        rewrite: (path) => path.replace(/^\/file/, '')
+      }
     },
   },
 })

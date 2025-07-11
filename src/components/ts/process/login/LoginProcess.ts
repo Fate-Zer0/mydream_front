@@ -5,6 +5,7 @@ import { useUserStore } from "../../stores/user";
 import { withRequest } from "../../composables/useRequest";
 import api from "../../api/api";
 import type { User } from "../../type/User";
+import websocket from "../../websocket/websocket";
 
 const userStore = useUserStore();
 export function useLoginForm() {
@@ -51,9 +52,12 @@ export function useLoginForm() {
 
 					userStore.setStorageUser(rememberMe.value);
 
-					await withRequest(() =>
-						api.account.user.updateUserStatus(userStore.getUser(),"20002"),
-					);
+					// 登录后连接 WebSocket
+					websocket.getInstance().connect(userinfo.user_id);
+
+					// await withRequest(() =>
+					// 	api.account.user.updateUserStatus(userStore.getUser(),"20002"),
+					// );
 
 					alertType.value = "alert-success";
 					alertMessage.value = "成功: 登陆成功,即将跳转到首页!";

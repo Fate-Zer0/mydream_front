@@ -1,10 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
 
+// WebSocketService 示例引入（请根据你的实际路径修改）
+import WebSocketService from "../../websocket/websocket";
+import {useUserStore} from "../../stores/user";
+
 const routes: RouteRecordRaw[] = [
 	{
 		path: "/",
-		// 重定向
 		beforeEnter: () => {
 			return { path: "/login" };
 		},
@@ -47,9 +50,31 @@ const routes: RouteRecordRaw[] = [
 	},
 ];
 
-export const loginRouter = createRouter({
+// 创建路由器实例
+const router = createRouter({
 	history: createWebHistory(),
 	routes,
 });
 
-export default loginRouter;
+// 👇 在这里添加导航守卫
+router.beforeEach((to, from, next) => {
+	const userStore = useUserStore();
+
+	if (userStore.getStorageUser()) {
+		const user_id = userStore.getUserid();
+
+		if (user_id && !WebSocketService.getInstance().isConnected()) {
+			WebSocketService.getInstance().connect(user_id);
+		}
+	} else {
+		// 可选：未登录时断开 WebSocket 连接
+		if (WebSocketService.getInstance().isConnected()) {
+			WebSocketService.getInstance().disconnect();
+		}
+	}
+
+	next();
+});
+
+// 导出路由器
+export default router;

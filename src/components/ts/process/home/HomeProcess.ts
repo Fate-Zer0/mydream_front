@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAlertStore } from "../../stores/alert";
 import { withRequest } from "../../composables/useRequest";
 import api from "../../api/api";
+import websocket from "../../websocket/websocket";
 
 export function useHomeProcess() {
 	const hasSigned = ref(false);
@@ -35,9 +36,13 @@ export function useHomeProcess() {
 	async function logout() {
 		const userStore = useUserStore();
 
-		await withRequest(() =>
-			api.account.user.updateUserStatus(userStore.getUser(),"20001"),
-		);
+		// await withRequest(() =>
+		// 	api.account.user.updateUserStatus(userStore.getUser(),"20001"),
+		// );
+
+		if (websocket.getInstance().isConnected()) {
+			websocket.getInstance().disconnect();
+		}
 
 		userStore.logout();
 

@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { useUserStore } from "../../ts/stores/user";
 import { useHomeProcess } from "../../ts/process/home/HomeProcess";
-import { User } from "src/components/ts/type/User";
+import { User } from "../../ts/type/User";
 const userStore: User = useUserStore();
 const { logout } = useHomeProcess();
 </script>
