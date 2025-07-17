@@ -3,10 +3,6 @@
 		class="navbar z-[9999] border-b border-white/10 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-xl backdrop-blur-sm"
 	>
 		<div class="flex-1">
-			<a
-				class="btn btn-ghost text-xl font-bold normal-case text-white transition-all duration-300 hover:bg-white/10"
-			>
-			</a>
 			<label
 				for="my-drawer-2"
 				class="btn btn-primary drawer-button btn-ghost text-xl font-bold normal-case text-white transition-all duration-300 hover:bg-white/10"
@@ -18,7 +14,8 @@
 			<button
 				class="btn btn-sm btn-ghost text-white transition-all duration-200 hover:scale-105 hover:bg-white/20"
 			>
-				<span class="mr-1">⚡</span>功能1
+				<span class="mr-1">💬</span>
+        <a href="/chat">好友列表</a>
 			</button>
 			<button
 				class="btn btn-sm btn-ghost text-white transition-all duration-200 hover:scale-105 hover:bg-white/20"

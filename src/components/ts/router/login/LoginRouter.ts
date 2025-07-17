@@ -48,6 +48,11 @@ const routes: RouteRecordRaw[] = [
 		name: "ForgetPassword",
 		component: () => import("../../../views/main/ForgetPassword.vue"),
 	},
+	{
+		path: "/chat",
+		name: "Chat",
+		component: () => import("../../../views/module/friend/Chat.vue"),
+	},
 ];
 
 // 创建路由器实例

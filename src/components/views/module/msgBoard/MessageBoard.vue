@@ -91,11 +91,11 @@
         </div>
 
         <!-- 加载更多 -->
-        <div v-if="messages.length > 0" class="text-center py-8">
-          <button class="btn btn-outline btn-lg rounded-2xl border-2 hover:scale-105 transition-all duration-300">
-            📄 加载更多留言
-          </button>
-        </div>
+<!--        <div v-if="messages.length > 0" class="text-center py-8">-->
+<!--          <button class="btn btn-outline btn-lg rounded-2xl border-2 hover:scale-105 transition-all duration-300">-->
+<!--            📄 加载更多留言-->
+<!--          </button>-->
+<!--        </div>-->
       </main>
     </div>
 
@@ -269,12 +269,12 @@ const toggleLike = async (messageId: number): Promise<void> => {
 const handleAddFriend = async (userId: string): Promise<void> => {
   try {
     // 调用添加好友API
-    // const res = await withRequest(() => api.module.friend.addFriend(userStore.getUserid(), userId));
-    // if (res.retCode === "0000") {
-    //   showSuccessToast('好友添加成功！');
-    // } else {
-    //   showErrorToast('添加好友失败，请重试');
-    // }
+    const res = await withRequest(() => api.module.friend.addFriend(userStore.getUserid(), userId));
+    if (res.retCode === "0000") {
+      showSuccessToast('好友添加成功！');
+    } else {
+      showErrorToast('添加好友失败，请重试');
+    }
     showErrorToast('添加好友正在制作中...');
 
   } catch (error) {

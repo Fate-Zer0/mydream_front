@@ -1,4 +1,4 @@
-import type {FileInfo} from "./FileInfo.ts";
+import type {FileInfo} from "./FileInfo";
 
 export type User = {
     user_id: string,
