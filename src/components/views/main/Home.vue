@@ -318,17 +318,11 @@
 								{{ module.description }}
 							</p>
 
-							<div class="card-actions justify-end">
-								<button
-									class="btn btn-sm rounded-xl font-semibold shadow-md transition-all duration-200 hover:shadow-lg"
-									:class="module.buttonClass"
-								>
-									<span class="mr-1">{{
-										module.buttonIcon
-									}}</span>
-									前往
-								</button>
-							</div>
+              <div class="card-actions justify-end">
+                <router-link :to="module.link" class="btn btn-sm rounded-xl font-semibold shadow-md transition-all duration-200 hover:shadow-lg" :class="module.buttonClass">
+                  <span class="mr-1">{{ module.buttonIcon }}</span> 前往
+                </router-link>
+              </div>
 						</div>
 					</div>
 				</div>
@@ -336,7 +330,7 @@
 		</div>
 
 		<!-- 👇 侧边抽屉菜单 -->
-    <SideDrawer :menu-items="menuItems" />
+    <SideDrawer/>
 	</div>
 </template>
 
@@ -352,46 +346,38 @@ import SideDrawer from "../components/homeSideDrawer.vue";
 
 const userStore = useUserStore();
 
-const menuItems = [
-  { title: '首页', href: '/home', icon: '🏠' },
-  { title: '留言板', href: '/messageBoard', icon: '💬' },
-  { title: '系统设置', href: '/settings', icon: '⚙️' },
-  { title: '帮助支持', href: '/help', icon: '❓' }
-]
-
 // 功能模块数据
 const modules = ref([
-	{
-		title: "学习管理",
-		description:
-			"记录和管理你的学习进度，制定学习计划，追踪知识点掌握情况。",
-		icon: "📚",
-		iconBg: "bg-gradient-to-br from-blue-100 to-indigo-100",
-		bgColor: "from-blue-500 to-indigo-500",
-		buttonClass:
-			"bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700",
-		buttonIcon: "📖",
-	},
-	{
-		title: "目标追踪",
-		description: "设定个人目标，追踪完成进度，让每一天的努力都有迹可循。",
-		icon: "🎯",
-		iconBg: "bg-gradient-to-br from-emerald-100 to-green-100",
-		bgColor: "from-emerald-500 to-green-500",
-		buttonClass:
-			"bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700",
-		buttonIcon: "🚀",
-	},
-	{
-		title: "数据分析",
-		description: "深入分析学习数据，发现学习模式，优化学习策略和效率。",
-		icon: "📈",
-		iconBg: "bg-gradient-to-br from-purple-100 to-pink-100",
-		bgColor: "from-purple-500 to-pink-500",
-		buttonClass:
-			"bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700",
-		buttonIcon: "📊",
-	},
+  {
+    title: "功能集合",
+    description: "汇聚游戏、工具与各类实用功能，一站式便捷跳转。",
+    icon: "📚",
+    iconBg: "bg-gradient-to-br from-blue-100 to-indigo-100",
+    bgColor: "from-blue-500 to-indigo-500",
+    buttonClass: "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700",
+    buttonIcon: "🚀",
+    link: "/pageBox"
+  },
+  {
+    title: "目标追踪",
+    description: "设定个人目标，追踪完成进度，让每一天的努力都有迹可循。",
+    icon: "🎯",
+    iconBg: "bg-gradient-to-br from-emerald-100 to-green-100",
+    bgColor: "from-emerald-500 to-green-500",
+    buttonClass: "bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700",
+    buttonIcon: "🚀",
+    link: "/goals" // 添加的链接
+  },
+  {
+    title: "数据分析",
+    description: "深入分析学习数据，发现学习模式，优化学习策略和效率。",
+    icon: "📈",
+    iconBg: "bg-gradient-to-br from-purple-100 to-pink-100",
+    bgColor: "from-purple-500 to-pink-500",
+    buttonClass: "bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700",
+    buttonIcon: "📊",
+    link: "/data-analysis" // 添加的链接
+  },
 ]);
 
 async function handleSignInAndRefresh() {

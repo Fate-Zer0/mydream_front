@@ -53,6 +53,16 @@ const routes: RouteRecordRaw[] = [
 		name: "Chat",
 		component: () => import("../../../views/module/friend/Chat.vue"),
 	},
+	{
+		path: "/pageBox",
+		name: "PageBox",
+		component: () => import("../../../views/main/PageBox.vue"),
+	},
+	{
+		path: "/mosi",
+		name: "Mosi",
+		component: () => import("../../../views/module/tool/mosi.vue"),
+	},
 ];
 
 // 创建路由器实例
