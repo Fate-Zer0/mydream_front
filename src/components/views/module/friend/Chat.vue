@@ -7,35 +7,26 @@
       <Header />
 
       <!-- 主体内容 -->
-      <div class="container mx-auto mt-8 px-4 pb-8 h-[calc(100vh-120px)]">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+      <div class="container mx-auto mt-8 px-2 sm:px-4 pb-8 h-[calc(100vh-120px)] max-w-7xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-6 h-full">
 
           <!-- 左侧好友列表 -->
-          <aside class="col-span-12 lg:col-span-4 xl:col-span-3">
+          <aside class="col-span-12 lg:col-span-4 xl:col-span-3 2xl:col-span-3">
             <div class="card h-full border-0 bg-white/80 backdrop-blur-xl shadow-xl shadow-indigo-500/10">
               <div class="card-body p-0 flex flex-col h-full">
 
-                <!-- 好友列表标题 -->
-                <div class="p-6 border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+                <!-- 好友列表标题（固定不滚动） -->
+                <div class="p-4 border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
                   <div class="flex items-center justify-between">
                     <h2 class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
                       <span class="text-2xl">💬</span>
                       好友列表
                     </h2>
-                    <!-- 可点击的按钮 -->
                     <button
                         @click="handleApply"
                         class="relative cursor-pointer inline-flex items-center px-4 py-2 text-white bg-gradient-to-r from-indigo-500 to-purple-500 border-0 rounded shadow-lg"
                     >
                       添加
-
-                      <!-- 徽章：当 pendingApplications > 0 时显示 -->
-<!--                      <span-->
-<!--                          class="absolute -top-2 -right-2 inline-flex items-center justify-center w-4 h-4 font-bold text-white bg-red-500 rounded-full"-->
-<!--                          style="font-size: 0.5rem;"-->
-<!--                      >-->
-<!--                        1-->
-<!--                      </span>-->
                     </button>
                   </div>
 
@@ -55,55 +46,69 @@
                   </div>
                 </div>
 
-                <!-- 好友列表 -->
-                <div class="flex-1 overflow-y-auto">
-                  <div class="p-3">
+                <!-- ✅ 修复：新增滚动容器 -->
+                <div class="flex-1 overflow-y-auto max-h-[calc(100vh-250px)] 2xl:max-h-[calc(100vh-200px)] px-3" style="scrollbar-width: thin; scrollbar-color: rgba(99, 102, 241, 0.3) transparent;">
+                  <!-- 可选：添加内边距 -->
+                  <div class="space-y-2 py-1">
                     <div
                         v-for="friend in filteredFriends"
-                        :key="friend.id"
-                        class="friend-item p-4 rounded-2xl cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:shadow-lg hover:scale-[1.02] mb-2"
-                        :class="{ 'bg-gradient-to-r from-indigo-100 to-purple-100 shadow-lg ring-2 ring-indigo-200': selectedFriend?.id === friend.id }"
+                        :key="friend.chat_user.user.user_id"
+                        class="friend-item p-2 rounded-2xl cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:shadow-lg hover:scale-[1.02] relative"
+                        :class="{ 'bg-gradient-to-r from-indigo-100 to-purple-100 shadow-lg ring-2 ring-indigo-200': selectedFriend?.chat_user.user.user_id === friend.chat_user.user.user_id }"
                         @click="selectFriend(friend)"
                     >
-                      <div class="flex items-center gap-3">
+                      <div class="flex items-center gap-2">
+
                         <!-- 头像 -->
                         <div class="avatar relative">
-                          <div class="w-14 h-14 rounded-full ring-2 ring-white shadow-lg transition-all duration-300">
-                            <img :src="friend.avatar" :alt="friend.name" class="rounded-full object-cover" />
+                          <div class="w-10 h-10 rounded-full ring-2 ring-white shadow-lg transition-all duration-300">
+                            <img :src="friend.chat_user.user.user_img?.file_url || 'https://picsum.photos/200'" :alt="friend.chat_user.user.user_name" class="rounded-full object-cover" />
                           </div>
-                          <!-- 在线状态 -->
                           <div
                               class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-3 border-white shadow-lg"
-                              :class="friend.online ? 'bg-emerald-500' : 'bg-gray-400'"
+                              :class="friend.chat_user.user_status_code != '20001' ? 'bg-emerald-500' : 'bg-gray-400'"
                           >
-                            <div v-if="friend.online" class="w-full h-full rounded-full bg-emerald-500 animate-pulse"></div>
+                            <div v-if="friend.chat_user.user_status_code != '20001'" class="w-full h-full rounded-full bg-emerald-500 animate-pulse"></div>
                           </div>
                         </div>
 
-                        <div class="flex-1 min-w-0">
+                        <!-- 文本信息区 -->
+                        <div class="flex-1 min-w-0 pr-6">
                           <div class="flex items-center justify-between">
-                            <h3 class="font-semibold text-gray-800 truncate">{{ friend.name }}</h3>
-                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ friend.lastMessageTime }}</span>
+                            <h3 class="font-semibold text-gray-800 truncate max-w-[70%]">
+                              {{ friend.chat_user.user.user_name }}
+                            </h3>
+                            <span class="text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                    {{ formatTime(friend.lastMessage?.createtime || friend.chat_user.last_sign_in_date) }}
+                  </span>
                           </div>
-                          <p class="text-sm text-gray-600 truncate mt-1">{{ friend.lastMessage }}</p>
+                          <p class="text-sm text-gray-600 truncate mt-1">
+                            {{ friend.lastMessage?.msg_content || '' }}
+                          </p>
                         </div>
 
-                        <!-- 未读消息 -->
-                        <div v-if="friend.unreadCount > 0" class="flex flex-col items-end">
-                          <div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
-                            {{ friend.unreadCount }}
+                        <!-- 未读数 -->
+                        <div v-if="friend.unread_count > 0" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm animate-pulse min-w-5 h-5 flex items-center justify-center">
+                            {{ friend.unread_count > 99 ? '99+' : friend.unread_count }}
                           </div>
                         </div>
                       </div>
                     </div>
+
+                    <!-- 可选：空状态 -->
+                    <div v-if="filteredFriends.length === 0" class="text-center text-gray-500 py-8">
+                      暂无好友
+                    </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </aside>
 
           <!-- 右侧聊天区域 -->
-          <main class="col-span-12 lg:col-span-8 xl:col-span-9">
+          <main class="col-span-12 lg:col-span-8 xl:col-span-8 2xl:col-span-9">
             <div class="card h-full border-0 bg-white/80 backdrop-blur-xl shadow-xl shadow-indigo-500/10">
 
               <!-- 未选择好友时的提示 -->
@@ -135,15 +140,15 @@
                     <div class="flex items-center gap-4">
                       <div class="avatar">
                         <div class="w-14 h-14 rounded-full ring-2 ring-indigo-200 shadow-lg">
-                          <img :src="selectedFriend.avatar" :alt="selectedFriend.name" class="rounded-full object-cover" />
+                          <img :src="selectedFriend.chat_user.user.user_img?.file_url || 'https://picsum.photos/200'" :alt="selectedFriend.chat_user.user.user_name" class="rounded-full object-cover" />
                         </div>
                       </div>
                       <div>
-                        <h3 class="font-bold text-gray-800 text-lg">{{ selectedFriend.name }}</h3>
+                        <h3 class="font-bold text-gray-800 text-lg">{{ selectedFriend.chat_user.user.user_name }}</h3>
                         <p class="text-sm flex items-center gap-2">
-                          <span class="w-2 h-2 rounded-full" :class="selectedFriend.online ? 'bg-emerald-500' : 'bg-gray-400'"></span>
-                          <span :class="selectedFriend.online ? 'text-emerald-600' : 'text-gray-500'">
-                            {{ selectedFriend.online ? '在线' : '离线' }}
+                          <span class="w-2 h-2 rounded-full" :class="selectedFriend.chat_user.user_status_code != '20001' ? 'bg-emerald-500' : 'bg-gray-400'"></span>
+                          <span :class="selectedFriend.chat_user.user_status_code != '20001' ? 'text-emerald-600' : 'text-gray-500'">
+                            {{ selectedFriend.chat_user.user_status_code != '20001' ? '在线' : '离线' }}
                           </span>
                         </p>
                       </div>
@@ -157,38 +162,38 @@
                     <div class="space-y-6">
                       <div
                           v-for="message in messages"
-                          :key="message.id"
+                          :key="message.msg_id"
                           class="flex message-item"
-                          :class="message.sender === 'me' ? 'justify-end' : 'justify-start'"
+                          :class="message.send_id === currentUser.user_id ? 'justify-end' : 'justify-start'"
                       >
                         <!-- 其他人的消息 -->
-                        <div v-if="message.sender !== 'me'" class="flex items-end gap-3 max-w-xs lg:max-w-md">
+                        <div v-if="message.send_id !== currentUser.user_id" class="flex items-end gap-3 max-w-[85%] sm:max-w-xs lg:max-w-md">
                           <div class="avatar">
                             <div class="w-10 h-10 rounded-full ring-2 ring-white shadow-md">
-                              <img :src="selectedFriend.avatar" :alt="selectedFriend.name" class="rounded-full object-cover" />
+                              <img :src="selectedFriend.chat_user.user.user_img?.file_url || 'https://picsum.photos/200'" :alt="selectedFriend.chat_user.user.user_name" class="rounded-full object-cover" />
                             </div>
                           </div>
                           <div class="flex flex-col">
-                            <div class="bg-white border border-indigo-100 rounded-2xl rounded-bl-md p-4 shadow-lg relative">
+                            <div class="bg-white border border-indigo-100 rounded-2xl rounded-bl-md p-3 shadow-lg relative">
                               <div class="absolute -left-2 bottom-3 w-0 h-0 border-l-0 border-r-8 border-t-8 border-b-0 border-r-white border-t-transparent"></div>
-                              <p class="text-gray-800 leading-relaxed">{{ message.content }}</p>
+                              <p class="text-gray-800 leading-relaxed break-words whitespace-pre-wrap text-sm" style="word-break: break-word; overflow-wrap: break-word;">{{ message.msg_content }}</p>
                             </div>
-                            <span class="text-xs text-gray-500 mt-2 ml-3">{{ message.time }}</span>
+                            <span class="text-xs text-gray-500 mt-1 ml-3">{{ formatTime(message.createtime) }}</span>
                           </div>
                         </div>
 
                         <!-- 我的消息 -->
-                        <div v-else class="flex items-end gap-3 max-w-xs lg:max-w-md">
+                        <div v-else class="flex items-end gap-3 max-w-[85%] sm:max-w-xs lg:max-w-md">
                           <div class="flex flex-col">
-                            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl rounded-br-md p-4 shadow-lg relative">
+                            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl rounded-br-md p-3 shadow-lg relative">
                               <div class="absolute -right-2 bottom-3 w-0 h-0 border-r-0 border-l-8 border-t-8 border-b-0 border-l-indigo-500 border-t-transparent"></div>
-                              <p class="leading-relaxed">{{ message.content }}</p>
+                              <p class="leading-relaxed break-words whitespace-pre-wrap text-sm" style="word-break: break-word; overflow-wrap: break-word;">{{ message.msg_content }}</p>
                             </div>
-                            <span class="text-xs text-gray-500 mt-2 mr-3 text-right">{{ message.time }}</span>
+                            <span class="text-xs text-gray-500 mt-1 mr-3 text-right">{{ formatTime(message.createtime) }}</span>
                           </div>
                           <div class="avatar">
                             <div class="w-10 h-10 rounded-full ring-2 ring-white shadow-md">
-                              <img src="https://picsum.photos/100/100?random=1" alt="我" class="rounded-full object-cover" />
+                              <img :src="currentUser.user_img.file_url" :alt="currentUser.user_name" class="rounded-full object-cover" />
                             </div>
                           </div>
                         </div>
@@ -317,11 +322,11 @@
                   </div>
                   <button
                       @click="sendFriendRequest(user)"
-                      :disabled="isRequestSent(user.id)"
+                      :disabled="isRequestSent(user.user_id)"
                       class="btn btn-sm rounded-lg"
-                      :class="isRequestSent(user.id) ? 'btn-disabled' : 'btn-primary bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 hover:from-indigo-600 hover:to-purple-600'"
+                      :class="isRequestSent(user.user_id) ? 'btn-disabled' : 'btn-primary bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 hover:from-indigo-600 hover:to-purple-600'"
                   >
-                    {{ isRequestSent(user.id) ? '已发送' : '添加' }}
+                    {{ isRequestSent(user.user_id) ? '已发送' : '添加' }}
                   </button>
                 </div>
               </div>
@@ -431,11 +436,19 @@ import {withRequest} from "../../../ts/composables/useRequest";
 import api from "../../../ts/api/api";
 import {useUserStore} from "../../../ts/stores/user";
 import type {FriendInfo} from "../../../ts/type/FriendInfo";
+import type {ChatInfo} from "../../../ts/type/ChatInfo";
 import {useAlertStore} from "../../../ts/stores/alert";
+import {User} from "../../../ts/type/User";
+import type {Message} from "../../../ts/type/Message";
+import WebSocketServiceWrapper from "../../../ts/websocket/websocket";
 
 const userStore = useUserStore();
 const alertStore = useAlertStore();
 
+// 当前用户信息
+const currentUser = userStore.getUser();
+
+const wsService = WebSocketServiceWrapper.getInstance();
 
 const menuItems = [
   { title: '首页', href: '/home', icon: '🏠' },
@@ -479,6 +492,45 @@ const formatDateSignin = (dateString: string): string => {
   }
 };
 
+// 优化时间格式化方法 - 使显示更紧凑
+const formatTime = (timeString) => {
+  if (!timeString) return '';
+  
+  // 如果是完整的日期时间格式 (2025-07-31 15:09:00)
+  if (timeString.includes(' ') && timeString.length > 16) {
+    // 提取日期和时间部分
+    const [datePart, timePart] = timeString.split(' ');
+    
+    // 获取今天的日期
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // 格式: YYYY-MM-DD
+    
+    // 如果是今天的消息，只显示时间
+    if (datePart === todayStr) {
+      return timePart.substring(0, 5); // 只返回小时和分钟 (15:09)
+    }
+    
+    // 如果是昨天的消息
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    if (datePart === yesterdayStr) {
+      return `昨天`; // 只显示"昨天"更紧凑
+    }
+    
+    // 如果是今年的消息，显示月/日
+    const currentYear = today.getFullYear().toString();
+    if (datePart.startsWith(currentYear)) {
+      return `${datePart.substring(5, 10).replace('-', '/')}`; // 格式: MM/DD
+    }
+    
+    // 其他情况显示年/月/日
+    return `${datePart.substring(2, 10).replace(/-/g, '/')}`; // 格式: YY/MM/DD
+  }
+  
+  return timeString; // 如果不是预期的格式，返回原始字符串
+};
+
 // 辅助函数：判断是否为今天
 function isToday(someDate: Date): boolean {
   const today = new Date();
@@ -490,59 +542,44 @@ function isToday(someDate: Date): boolean {
 // 搜索关键词
 const searchTerm = ref('');
 
-// 好友列表数据
-const friends = ref([
+const ChatInfos = ref<ChatInfo[]>([
   {
-    id: 1,
-    name: '张小明',
-    avatar: 'https://picsum.photos/100/100?random=1',
-    online: true,
-    lastMessage: '今天天气真不错！',
-    lastMessageTime: '10:30',
-    unreadCount: 2
-  },
-  {
-    id: 2,
-    name: '李小红',
-    avatar: 'https://picsum.photos/100/100?random=2',
-    online: false,
-    lastMessage: '好的，明天见面聊',
-    lastMessageTime: '昨天',
-    unreadCount: 0
-  },
-  {
-    id: 3,
-    name: '王大力',
-    avatar: 'https://picsum.photos/100/100?random=3',
-    online: true,
-    lastMessage: '项目进度如何？',
-    lastMessageTime: '09:15',
-    unreadCount: 1
-  },
-  {
-    id: 4,
-    name: '赵美丽',
-    avatar: 'https://picsum.photos/100/100?random=4',
-    online: true,
-    lastMessage: '周末一起看电影吧',
-    lastMessageTime: '08:45',
-    unreadCount: 0
-  },
-  {
-    id: 5,
-    name: '刘强东',
-    avatar: 'https://picsum.photos/100/100?random=5',
-    online: false,
-    lastMessage: '文档已发送，请查收',
-    lastMessageTime: '周三',
-    unreadCount: 0
+    chat_user:{
+      user : {
+        user_id :  "10001",
+        user_name :  "0fate",
+        user_pw :  null,
+        user_img : null,
+      },
+      user_create_date : "2023-05-01 10:00:00",
+      last_sign_in_date : "2023-05-01 10:00:00",
+      user_points : "100",
+      user_sex_code : "1",
+      user_sex_name : "男",
+      user_grjj : "这个人很懒，什么都没写",
+      user_status_code : "20001",
+      user_status_name : "在线"
+    },
+    lastMessage:{
+      msg_id: '',
+      msg_content: '',
+      createtime:'',
+      send_id: '',
+      receive_id: '',
+      msg_type: '',
+      msg_state: '',
+      file_info: null,
+      send_type: ''
+    },
+    unread_count: 0 ,
+    chat_count:2
   }
-]);
+])
 
 // 添加好友相关的响应式数据
 const showAddFriendModal = ref(false);
 const userSearchTerm = ref('');
-const searchResults = ref([]);
+const searchResults = ref<User[]>([]);
 const isSearching = ref(false);
 const sentRequestIds = ref(new Set());
 
@@ -718,10 +755,10 @@ watch(userSearchTerm, () => {
 });
 
 // 当前选中的好友
-const selectedFriend = ref(null);
+const selectedFriend = ref<ChatInfo>(null);
 
 // 聊天消息
-const messages = ref([]);
+const messages = ref<Message[]>([]);
 
 // 新消息
 const newMessage = ref('');
@@ -735,10 +772,10 @@ const messagesContainer = ref(null);
 // 过滤后的好友列表
 const filteredFriends = computed(() => {
   if (!searchTerm.value) {
-    return friends.value;
+    return ChatInfos.value;
   }
-  return friends.value.filter(friend =>
-      friend.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+  return ChatInfos.value.filter(ChatInfos =>
+      ChatInfos.chat_user.user.user_name.toLowerCase().includes(searchTerm.value.toLowerCase())
   );
 });
 
@@ -746,119 +783,38 @@ const filteredFriends = computed(() => {
 const selectFriend = async (friend) => {
   selectedFriend.value = friend;
   // 清除未读消息
-  friend.unreadCount = 0;
+  friend.unread_count = 0;
 
-  // 模拟加载聊天历史
-  await loadChatHistory(friend.id);
+  await loadChatHistory(friend.chat_user.user.user_id);
 };
 
 // 加载聊天历史（模拟接口）
 const loadChatHistory = async (friendId) => {
-  // 模拟API延时
-  await new Promise(resolve => setTimeout(resolve, 500));
 
-  // 模拟更多聊天历史数据，让滚动条更明显
-  const mockMessages = [
-    {
-      id: 1,
-      sender: selectedFriend.value.name,
-      content: '你好！最近怎么样？',
-      time: '09:00'
-    },
-    {
-      id: 2,
-      sender: 'me',
-      content: '很好啊，你呢？工作忙吗？',
-      time: '09:05'
-    },
-    {
-      id: 3,
-      sender: selectedFriend.value.name,
-      content: '还好，就是项目有点紧张。对了，周末有空吗？',
-      time: '09:10'
-    },
-    {
-      id: 4,
-      sender: 'me',
-      content: '周末应该有空，有什么安排吗？',
-      time: '09:15'
-    },
-    {
-      id: 5,
-      sender: selectedFriend.value.name,
-      content: '我想去看个电影，你有什么推荐吗？',
-      time: '09:20'
-    },
-    {
-      id: 6,
-      sender: 'me',
-      content: '最近有几部不错的电影，我们可以一起去看！',
-      time: '09:25'
-    },
-    {
-      id: 7,
-      sender: selectedFriend.value.name,
-      content: '太好了！那我们约个时间吧',
-      time: '09:30'
-    },
-    {
-      id: 8,
-      sender: 'me',
-      content: '好的，我看看这周末的时间安排',
-      time: '09:35'
-    },
-    {
-      id: 9,
-      sender: selectedFriend.value.name,
-      content: '不急，你先安排好自己的事情',
-      time: '09:40'
-    },
-    {
-      id: 10,
-      sender: 'me',
-      content: '好的，我整理一下时间就告诉你',
-      time: '09:45'
-    },
-    {
-      id: 11,
-      sender: selectedFriend.value.name,
-      content: '嗯嗯，那我等你消息',
-      time: '09:50'
-    },
-    {
-      id: 12,
-      sender: 'me',
-      content: '好的！对了，你最近在忙什么项目？',
-      time: '09:55'
-    },
-    {
-      id: 13,
-      sender: selectedFriend.value.name,
-      content: '在做一个新的系统开发，功能挺复杂的，需要很多时间来完善',
-      time: '10:00'
-    },
-    {
-      id: 14,
-      sender: 'me',
-      content: '听起来很有挑战性！如果需要帮助的话随时找我',
-      time: '10:05'
-    },
-    {
-      id: 15,
-      sender: selectedFriend.value.name,
-      content: '谢谢你！有需要的话我一定找你',
-      time: '10:10'
-    }
-  ];
+  const res = await withRequest(() => api.module.chat.getChatMessageListByUseridAndFriendid(currentUser.user_id,friendId));
+  if(res?.retValue){
+    messages.value = res.retValue;
 
-  messages.value = mockMessages;
-
-  // 确保DOM更新后滚动到底部
-  await nextTick();
-  setTimeout(() => {
+    // 滚动到底部
+    await nextTick();
     scrollToBottom();
-  }, 100);
+  }else{
+    alertStore.showAlertWithAutoHide("alert-warning", res.retDesc);
+  }
 };
+
+const getLastMessage = async (userid,friendId) => {
+  const res = await withRequest(() => api.module.chat.getLastMessage(userid,friendId));
+  if(res?.retValue){
+    messages.value.push(res.retValue);
+
+    // 滚动到底部
+    await nextTick();
+    scrollToBottom();
+  }else{
+    alertStore.showAlertWithAutoHide("alert-warning", res.retDesc);
+  }
+}
 
 // 发送消息
 const sendMessage = async () => {
@@ -868,10 +824,15 @@ const sendMessage = async () => {
 
   // 添加我的消息
   const myMessage = {
-    id: Date.now(),
-    sender: 'me',
-    content: newMessage.value,
-    time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    msg_id: '',
+    msg_content: newMessage.value,
+    createtime: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+    send_id: currentUser.user_id,
+    receive_id: selectedFriend.value.chat_user.user.user_id,
+    msg_type: '1',
+    msg_state: '0',
+    file_info: null,
+    send_type: '1'
   };
 
   messages.value.push(myMessage);
@@ -882,44 +843,17 @@ const sendMessage = async () => {
   await nextTick();
   scrollToBottom();
 
-  // 模拟发送延时
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  const res = await withRequest(() => api.module.chat.addChatMassage(myMessage));
+  if(res?.retCode == '0000'){
+    wsService.sendMessage('/app/chat', {
+      type: 'Char',
+      to: selectedFriend.value.chat_user.user.user_id
+    });
+  }else{
+    alertStore.showAlertWithAutoHide("alert-warning", res.retDesc);
+  }
 
   isSending.value = false;
-
-  // 模拟对方回复
-  setTimeout(async () => {
-    const replyMessage = {
-      id: Date.now() + 1,
-      sender: selectedFriend.value.name,
-      content: getAutoReply(messageContent),
-      time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    };
-
-    messages.value.push(replyMessage);
-
-    // 滚动到底部
-    await nextTick();
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
-  }, 2000);
-};
-
-// 自动回复逻辑
-const getAutoReply = (message) => {
-  const replies = [
-    '哈哈，你说得对！',
-    '嗯嗯，我也是这么想的',
-    '好的，明白了',
-    '真的吗？太有意思了',
-    '我们改天再聊这个话题吧',
-    '谢谢你的分享！',
-    '听起来不错呢',
-    '好主意！'
-  ];
-
-  return replies[Math.floor(Math.random() * replies.length)];
 };
 
 // 滚动到底部
@@ -965,14 +899,35 @@ async function updateFriendState(fri_id,state){
   await flushAddFriendInfo();
 }
 
+async function getChatInfoList(user_id){
+  const res = await withRequest(() => api.module.chat.getChatInfoList(user_id));
+  if(res?.retValue){
+    ChatInfos.value = res.retValue;
+  }else{
+    alertStore.showAlertWithAutoHide("alert-warning", res.retDesc);
+  }
+}
+
 async function flushAddFriendInfo(){
   await getAddFriendInfoIsMyAdd();
   await getAddFriendInfoIsAddMy();
 }
 
 onMounted(async () => {
-  if (friends.value.length > 0) {
-    await selectFriend(friends.value[0]);
+  wsService.onMessage(async(data) => {
+    if(data.type == "Char"){
+      if(data.to == currentUser.user_id){
+        await getLastMessage(currentUser.user_id,selectedFriend.value.chat_user.user.user_id);
+      }else{
+        await getChatInfoList(currentUser.user_id);
+      }
+    }
+  });
+
+  await getChatInfoList(currentUser.user_id);
+
+  if (ChatInfos.value.length > 0) {
+    await selectFriend(ChatInfos.value[0]);
   }
 
   sentRequestIds.value = new Set(
@@ -1121,6 +1076,30 @@ onMounted(async () => {
   .container {
     height: calc(100vh - 80px);
   }
+}
+
+/* 响应式调整 */
+@media (min-width: 1280px) and (max-width: 1600px) {
+  .friend-item {
+    padding: 0.5rem;
+  }
+  
+  .avatar .w-12 {
+    width: 2.5rem;
+  }
+  
+  .avatar .h-12 {
+    height: 2.5rem;
+  }
+}
+
+/* 确保消息不会导致水平滚动 */
+.message-item {
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 /* 输入框聚焦效果 */
