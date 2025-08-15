@@ -846,7 +846,7 @@ const sendMessage = async () => {
   const res = await withRequest(() => api.module.chat.addChatMassage(myMessage));
   if(res?.retCode == '0000'){
     wsService.sendMessage('/app/chat', {
-      type: 'Char',
+      type: 'Chat',
       to: selectedFriend.value.chat_user.user.user_id
     });
   }else{
@@ -915,7 +915,7 @@ async function flushAddFriendInfo(){
 
 onMounted(async () => {
   wsService.onMessage(async(data) => {
-    if(data.type == "Char"){
+    if(data.type == "Chat"){
       if(data.to == currentUser.user_id){
         await getLastMessage(currentUser.user_id,selectedFriend.value.chat_user.user.user_id);
       }else{

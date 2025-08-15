@@ -8,7 +8,7 @@
 			<!-- 👇 主体内容 -->
 			<div class="container mx-auto mt-8 px-4 pb-8">
 				<!-- 👇 轮播图区域和右侧签到模块 -->
-				<section class="mb-10 grid grid-cols-1 gap-6 md:grid-cols-12">
+				<section class="grid grid-cols-1 gap-6 md:grid-cols-12">
 					<!-- 轮播图 -->
 					<aside class="col-span-12 md:col-span-9">
 						<!-- 轮播图容器 -->
@@ -101,6 +101,15 @@
 								</template>
 							</div>
 						</div>
+
+            <!-- 热门内容 -->
+            <div class="p-6">
+              <HotDynamics
+                  :posts="dynamicPosts"
+                  @view-all="handleViewAll"
+                  @post-click="handlePostClick"
+              />
+            </div>
 					</aside>
 
 					<!-- 右侧签到模块 - 全新设计 -->
@@ -113,7 +122,7 @@
                 <div
                     v-if="showCalendar"
                     class="absolute bottom-full mb-4 z-[9999] pointer-events-auto"
-                    style="top: -10px;left: 15px"
+                    style="top: 60px;left: 15px"
                     @mouseenter="cancelHideCalendar"
                     @mouseleave="hideCalendarWithDelay"
                 >
@@ -155,9 +164,9 @@
 
               <div class="card-body items-center p-6 text-center relative">
 								<!-- 优化后的头像区域 -->
-								<div class="avatar indicator mb-4">
+								<div class="avatar indicator mb-4"  style="padding-top: 10px;padding-bottom: 10px">
 									<div
-										class="ring-primary ring-offset-base-100 hover:ring-secondary h-24 w-24 rounded-full shadow-xl ring-4 ring-offset-4 transition-all duration-500 hover:scale-110 hover:shadow-2xl"
+										class="ring-primary ring-offset-base-100 hover:ring-secondary h-34 w-34 rounded-full shadow-xl ring-4 ring-offset-4 transition-all duration-500 hover:scale-110 hover:shadow-2xl"
 									>
 										<img
 											:src="
@@ -180,7 +189,8 @@
 								<!-- 签到统计信息 -->
 								<div
 									class="stats stats-vertical mt-4 w-full rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 shadow-lg"
-								>
+                  style="padding-top: 10px"
+                >
 									<div class="stat py-3">
 										<div
 											class="stat-figure text-indigo-500"
@@ -343,6 +353,7 @@ import { signInInfoCalendar } from "../../ts/composables/signInInfoCalendar";
 import Calendar from "../components/signInInfoCalendar.vue";
 import Header from "../components/homeHead.vue";
 import SideDrawer from "../components/homeSideDrawer.vue";
+import HotDynamics from '../components/hotDynamics.vue';
 
 const userStore = useUserStore();
 
@@ -427,6 +438,65 @@ onMounted(async () => {
 	checkForSlides();
 	await getSigningInInfo(userStore.getUserid());
 });
+
+const dynamicPosts = [
+  {
+    id: 1,
+    title: '学习小组成立啦',
+    content: '加入我们的学习小组，一起分享学习经验和资源，提高学习效率！',
+    author: '张同学',
+    avatar: 'https://picsum.photos/200?random=1',
+    time: '2小时前',
+    likes: 128,
+    comments: 36,
+    type: 'hot',
+    badge: '热门',
+  },
+  {
+    id: 2,
+    title: '新功能上线通知',
+    content: '我们新增了学习计划功能，帮助你更好地规划学习时间，提高学习效率！',
+    author: '系统通知',
+    avatar: 'https://picsum.photos/200?random=2',
+    time: '昨天',
+    likes: 95,
+    comments: 24,
+    type: 'update',
+    badge: '更新',
+  },
+  {
+    id: 3,
+    title: '每周学习挑战',
+    content: '本周挑战：完成5道算法题，赢取额外积分奖励！参与即有机会获得精美礼品。',
+    author: '管理员',
+    avatar: 'https://picsum.photos/200?random=3',
+    time: '3天前',
+    likes: 156,
+    comments: 42,
+    type: 'challenge',
+    badge: '挑战',
+  },
+  {
+    id: 4,
+    title: '学习资源分享',
+    content: '分享一些高质量的学习资源，包括视频教程、电子书和实用工具，助力大家学习进步！',
+    author: '李老师',
+    avatar: 'https://picsum.photos/200?random=4',
+    time: '5天前',
+    likes: 210,
+    comments: 68,
+    type: 'share',
+    badge: '分享',
+  },
+];
+
+const handleViewAll = () => {
+  console.log('跳转到全部动态页');
+};
+
+const handlePostClick = (post) => {
+  console.log('点击了动态：', post);
+};
 </script>
 
 <style scoped>
