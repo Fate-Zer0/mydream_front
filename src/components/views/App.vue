@@ -2,7 +2,7 @@
 	<div id="app">
 		<router-view />
 
-    <pet />
+<!--    <pet />-->
 	</div>
 
 	<!-- 警告信息 - 优化样式 -->

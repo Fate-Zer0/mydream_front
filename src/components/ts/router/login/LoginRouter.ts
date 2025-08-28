@@ -63,6 +63,16 @@ const routes: RouteRecordRaw[] = [
 		name: "Mosi",
 		component: () => import("../../../views/module/tool/mosi.vue"),
 	},
+	{
+		path: "/car",
+		name: "Car",
+		component: () => import("../../../views/module/tool/car.vue"),
+	},
+	{
+		path: "/share",
+		name: "Share",
+		component: () => import("../../../views/module/tool/share.vue"),
+	},
 ];
 
 // 创建路由器实例

@@ -592,6 +592,7 @@ const pendingApplications = ref<FriendInfo[]>([
       user_name: '王小二',
       user_pw: '',
       user_img: {
+        file_id: '',
         file_name: '王小二.jpg',
         file_path: '',
         file_url: 'https://picsum.photos/100/100?random=2'
@@ -613,6 +614,7 @@ const sentApplications = ref<FriendInfo[]>([
       user_name: '王小二',
       user_pw: '',
       user_img: {
+        file_id:'',
         file_name: '王小二.jpg',
         file_path: '',
         file_url: 'https://picsum.photos/100/100?random=2'

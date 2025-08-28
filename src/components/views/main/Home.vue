@@ -103,7 +103,7 @@
 						</div>
 
             <!-- 热门内容 -->
-            <div class="p-6">
+            <div class="p-6" style="padding:0px;padding-top: 10px;padding-bottom: 24px;">
               <HotDynamics
                   :posts="dynamicPosts"
                   @view-all="handleViewAll"

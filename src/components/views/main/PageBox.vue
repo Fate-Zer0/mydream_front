@@ -87,15 +87,15 @@
         <TransitionGroup name="card-list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" appear>
           <div
               v-for="(page, index) in filteredPages"
-              :key="page.id"
+              :key="page.pb_id"
               class="card-item"
           >
             <div class="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/40 overflow-hidden h-full flex flex-col card-hover group">
               <!-- 封面图片 -->
               <div class="relative h-52 overflow-hidden">
                 <img
-                    :src="page.cover"
-                    :alt="page.name"
+                    :src="page.pb_img?.file_url || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop'"
+                    :alt="page.pb_name"
                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     @error="handleImageError"
                 >
@@ -125,7 +125,7 @@
               <!-- 卡片内容 -->
               <div class="p-6 flex-1 flex flex-col">
                 <h3 class="text-xl font-bold text-gray-800 mb-3 line-clamp-1 group-hover:text-indigo-600 transition-colors duration-300">
-                  {{ page.name }}
+                  {{ page.pb_name }}
                 </h3>
                 <p class="text-gray-600 text-sm mb-4 line-clamp-2 flex-1 leading-relaxed">
                   {{ page.description }}
@@ -135,11 +135,11 @@
                 <div class="flex flex-wrap gap-2 mb-6">
                   <span
                       v-for="tag in page.tags"
-                      :key="tag"
+                      :key="tag.tag_name"
                       class="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 text-xs rounded-full hover:from-indigo-100 hover:to-purple-100 hover:text-indigo-700 transition-all cursor-pointer transform hover:scale-105 font-medium"
-                      @click="searchByTag(tag)"
+                      @click="searchByTag(tag.tag_name)"
                   >
-                    {{ tag }}
+                    {{ tag.tag_name }}
                   </span>
                 </div>
 
@@ -158,7 +158,7 @@
                   </button>
                   <button
                       @click="toggleFavorite(page)"
-                      :class="getFavoriteButtonClass(page.isFavorite)"
+                      :class="getFavoriteButtonClass(page.isFavorite == '1')"
                       class="w-12 h-12 rounded-2xl transition-all duration-300 hover:shadow-xl transform hover:scale-110 active:scale-95 flex items-center justify-center font-bold relative overflow-hidden group/fav"
                       :disabled="loading"
                   >
@@ -269,12 +269,24 @@
 
                   <div>
                     <label class="block text-sm font-bold text-gray-700 mb-3">封面链接</label>
+
+                    <!-- 文件上传输入框 -->
                     <input
-                        v-model="newPage.cover"
-                        type="url"
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                        placeholder="https://example.com/image.jpg"
+                        type="file"
+                        accept="image/*"
+                        @change="handleImageUpload"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 transition-all duration-300 bg-white/80 backdrop-blur-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                     >
+
+                    <!-- 图片预览 -->
+                    <div v-if="newPage.fileinfo" class="mt-4">
+                      <p class="text-sm text-gray-600 mb-2">封面预览：</p>
+                      <img
+                          :src="newPage.fileinfo.file_url"
+                          alt="封面预览"
+                          class="max-h-60 rounded-lg shadow-md object-cover border border-gray-300"
+                      >
+                    </div>
                   </div>
 
                   <div>
@@ -283,7 +295,7 @@
                     </label>
                     <input
                         v-model="newPage.url"
-                        type="url"
+                        type="text"
                         required
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 transition-all duration-300 bg-white/80 backdrop-blur-sm"
                         placeholder="https://example.com"
@@ -343,6 +355,15 @@
 import { ref, computed, reactive, onMounted, nextTick } from 'vue'
 import Header from "../components/homeHead.vue";
 import SideDrawer from "../components/homeSideDrawer.vue";
+import type {PageBox} from "../../ts/type/PageBox";
+import type {Tag} from "../../ts/type/Tag";
+import api from "../../ts/api/api";
+import type {FileInfo} from "../../ts/type/FileInfo";
+import {withRequest} from "../../ts/composables/useRequest";
+import {useUserStore} from "../../ts/stores/user";
+
+const userStore = useUserStore();
+const currentUser = userStore.getUser();
 
 // 类型定义
 interface Category {
@@ -367,6 +388,7 @@ interface NewPageForm {
   name: string
   description: string
   category: string
+  fileinfo: FileInfo
   cover: string
   url: string
   tagsInput: string
@@ -386,6 +408,24 @@ const categories = ref<Category[]>([
   { name: '传送门', icon: '🚪' },
   { name: '其他', icon: '📦' }
 ])
+
+const pageBox = ref<PageBox[]>(
+    [
+        {
+          pb_id: '1',
+          pb_name: '在线代码编辑器',
+          description: '支持多种编程语言的在线代码编辑和运行环境，实时预览效果。',
+          category: '工具',
+          pb_img: null,
+          pb_url: 'https://play.google.com/store/apps/details?id=com.google.android.apps.docs',
+          tags: null,
+          status: '正常',
+          pb_state: '正常',
+          isFavorite: "",
+          createtime:""
+        }
+    ]
+);
 
 // 功能页面数据
 const pages = ref<FunctionPage[]>([
@@ -412,6 +452,18 @@ const pages = ref<FunctionPage[]>([
     status: '热门',
     isFavorite: false,
     createdAt: new Date('2025-08-01')
+  },
+  {
+    id: 3,
+    name: '遥控小车',
+    description: '遥控小车小游戏',
+    category: '游戏',
+    cover: 'https://images.unsplash.com/photo-1616628188750-294d61747b99?w=400&h=300&fit=crop',
+    url: '/car',
+    tags: ['在线', '游戏'],
+    status: '热门',
+    isFavorite: false,
+    createdAt: new Date('2025-08-22')
   }
 ])
 
@@ -420,14 +472,26 @@ const newPage = reactive<NewPageForm>({
   name: '',
   description: '',
   category: '',
+  fileinfo: null,
   cover: '',
   url: '',
   tagsInput: ''
 })
 
+onMounted(async () => {
+  await getPageBox(currentUser.user_id);
+})
+
+const getPageBox = async (userid) => {
+  const res = await withRequest(() => api.module.pageBox.getPageList(userid));
+  if(res?.retValue){
+     pageBox.value = res.retValue;
+  }
+}
+
 // 计算属性
-const filteredPages = computed<FunctionPage[]>(() => {
-  let filtered = pages.value
+const filteredPages = computed<PageBox[]>(() => {
+  let filtered = pageBox.value
 
   // 按分类过滤
   if (selectedCategory.value !== '全部') {
@@ -438,25 +502,26 @@ const filteredPages = computed<FunctionPage[]>(() => {
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim()
     filtered = filtered.filter(page =>
-        page.name.toLowerCase().includes(query) ||
+        page.pb_name.toLowerCase().includes(query) ||
         page.description.toLowerCase().includes(query) ||
-        page.tags.some(tag => tag.toLowerCase().includes(query))
+        page.tags.some(tag => tag.tag_name.toLowerCase().includes(query))
     )
   }
 
   return filtered
 })
 
-const totalPages = computed<number>(() => pages.value.length)
+const totalPages = computed<number>(() => pageBox.value.length)
 
 const favoriteCount = computed<number>(() =>
-    pages.value.filter(page => page.isFavorite).length
+    pageBox.value.filter(page => page.isFavorite).length
 )
 
 const recentlyAdded = computed<number>(() => {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  return pages.value.filter(page => page.createdAt > thirtyDaysAgo).length
+
+  return pageBox.value.filter(page => new Date(page.createtime) > thirtyDaysAgo).length
 })
 
 // 方法
@@ -502,17 +567,20 @@ const getFavoriteButtonClass = (isFavorite: boolean): string => {
       : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-600 hover:from-gray-400 hover:to-gray-500 shadow-lg border-2 border-gray-200'
 }
 
-const visitPage = (page: FunctionPage): void => {
-  if (page.url && page.url !== '#') {
-    window.open(page.url, '_blank')
+const visitPage = (page: PageBox): void => {
+  if (page.pb_url && page.pb_url !== '#') {
+    window.open(page.pb_url, '_blank')
   } else {
-    alert(`即将前往：${page.name}`)
+    alert(`即将前往：${page.pb_name}`)
   }
 }
 
-const toggleFavorite = (page: FunctionPage): void => {
-  page.isFavorite = !page.isFavorite
-  // 这里可以调用API保存收藏状态
+const toggleFavorite = (page: PageBox): void => {
+  if(page.isFavorite == "1"){
+    page.isFavorite = "0"
+  }else{
+    page.isFavorite = "1"
+  }
 }
 
 const searchByTag = (tag: string): void => {
@@ -532,10 +600,32 @@ const handleImageError = (event: Event): void => {
 const closeAddModal = (): void => {
   showAddModal.value = false
   // 重置表单
-  Object.keys(newPage).forEach(key => {
-    newPage[key as keyof NewPageForm] = ''
-  })
+  newPage.name = ''
+  newPage.description = ''
+  newPage.category = ''
+  newPage.fileinfo = null
+  newPage.cover = ''
+  newPage.url = ''
+  newPage.tagsInput = ''
 }
+
+const handleImageUpload = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  // 检查是否为图片
+  if (!file.type.startsWith('image/')) {
+    alert('请上传有效的图片文件！');
+    return;
+  }
+
+  const res = await withRequest(() => api.module.pageBox.uploadImage(file));
+  if(res?.retValue){
+    newPage.fileinfo = res.retValue;
+  }else{
+    alert("上传图片失败")
+  }
+};
 
 const addNewPage = async (): Promise<void> => {
   if (!newPage.name || !newPage.category || !newPage.url) {
@@ -546,29 +636,42 @@ const addNewPage = async (): Promise<void> => {
   loading.value = true
 
   try {
-    // 模拟API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const tags = (newPage.tagsInput
+        ? newPage.tagsInput
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(tag => tag)
+        : [])
+        .map(tagName => ({
+          tag_name: tagName,
+          tag_id: '',           // 留空，等待后端生成
+          conn_id: '',          // 根据业务逻辑填充，如页面ID等
+          tag_state: '',  // 默认状态
+        } as Tag));
 
-    const tags = newPage.tagsInput
-        ? newPage.tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag)
-        : []
-
-    const page: FunctionPage = {
-      id: Date.now(),
-      name: newPage.name,
+    const page: PageBox = {
+      pb_id: Date.now().toString(),
+      pb_name: newPage.name,
       description: newPage.description || '暂无描述',
+      pb_img: newPage.fileinfo,
+      pb_url: newPage.url,
       category: newPage.category,
-      cover: newPage.cover || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop',
-      url: newPage.url,
       tags: tags,
-      isFavorite: false,
-      createdAt: new Date()
+      isFavorite: "",
+      status: "",
+      pb_state: "",
+      createtime: ""
+     }
+
+    pageBox.value.unshift(page)
+
+    const res = await withRequest(() => api.module.pageBox.addPage(page));
+    if (res?.retCode == '0000') {
+      closeAddModal()
+      alert('功能页面添加成功！')
+    }else{
+      alert('功能页面添加失败！')
     }
-
-    pages.value.unshift(page)
-    closeAddModal()
-
-    alert('功能页面添加成功！')
   } catch (error) {
     console.error('添加功能页面失败:', error)
     alert('添加失败，请稍后重试')
