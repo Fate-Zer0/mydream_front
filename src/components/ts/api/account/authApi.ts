@@ -24,7 +24,7 @@ export default {
      * @param userid - 用户ID
      */
     signUp(user : User): Promise<ReturnValue<Boolean>> {
-        return request.post("/account/auth/signUp", {
+        return request.post("/account/auth/signUp", user,{
             headers: {
                 "Content-Type": "application/json",
             },

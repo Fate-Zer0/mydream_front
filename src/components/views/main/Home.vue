@@ -122,7 +122,7 @@
                 <div
                     v-if="showCalendar"
                     class="absolute bottom-full mb-4 z-[9999] pointer-events-auto"
-                    style="top: 60px;left: 15px"
+                    style="top: 60px;left: -15px"
                     @mouseenter="cancelHideCalendar"
                     @mouseleave="hideCalendarWithDelay"
                 >
