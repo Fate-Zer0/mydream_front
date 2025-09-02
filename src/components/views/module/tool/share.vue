@@ -441,12 +441,73 @@ const getFileIcon = (type: string): string => {
   if (type.includes('image')) return '🖼️';
   if (type.includes('spreadsheet') || type.includes('excel')) return '📊';
   if (type.includes('presentation') || type.includes('powerpoint')) return '📽️';
-  if (type.includes('word') || type.includes('document')) return '📝';
+  if (type.includes('application')) return '📝';
   if (type.includes('text')) return '📃';
   if (type.includes('video')) return '🎥';
   if (type.includes('audio')) return '🎵';
   if (type.includes('zip') || type.includes('rar')) return '📦';
   return '📎';
+};
+
+const guessMimeTypeFromExtension = (filename: string): string => {
+  // 提取扩展名（转小写）
+  const match = filename.toLowerCase().match(/\.(?:([^./]+)(?=\.[^./]*$)|([^./]+)$)/);
+  if (!match) return '';
+
+  const ext = match[1] || match[2]; // 支持 a.b.c.txt 这种多扩展名
+
+  const mimeMap: Record<string, string> = {
+    // 文档类
+    'pdf': 'application/pdf',
+    'doc': 'application/msword',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xls': 'application/vnd.ms-excel',
+    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'ppt': 'application/vnd.ms-powerpoint',
+    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+
+    // 纯文本
+    'txt': 'text/plain',
+    'csv': 'text/csv',
+    'json': 'text/json',
+    'xml': 'text/xml',
+
+    // 图像
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'svg': 'image/svg+xml',
+    'bmp': 'image/bmp',
+    'ico': 'image/x-icon',
+
+    // 音视频
+    'mp3': 'audio/mpeg',
+    'wav': 'audio/wav',
+    'aac': 'audio/aac',
+    'flac': 'audio/flac',
+    'mp4': 'video/mp4',
+    'avi': 'video/x-msvideo',
+    'mov': 'video/quicktime',
+    'webm': 'video/webm',
+
+    // 压缩文件
+    'zip': 'zip/zip',
+    'rar': 'zip/x-rar-compressed',
+    '7z': 'zip/x-7z-compressed',
+    'tar': 'zip/x-tar',
+    'gz': 'zip/gzip',
+    'bz2': 'zip/x-bzip2',
+
+    // 其他
+    'html': 'text/html',
+    'css': 'text/css',
+    'js': 'text/javascript',
+    'ts': 'text/typescript',
+  };
+
+  return mimeMap[ext] || '';
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -544,17 +605,16 @@ const uploadFiles = async () => {
   uploadProgress.value = 0;
 
   try {
-    // 模拟上传进度
-    for (let i = 0; i <= 100; i += 10) {
-      uploadProgress.value = i;
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
     let successCount = 0;
     let failureCount = 0;
 
+    let count = 0;
+
     for (const file of selectedFiles.value) { // 使用 for...of 更清晰
+      count ++;
+      uploadProgress.value = count / selectedFiles.value.length * 100;
       try {
+        alert(file.type);
         const shareFile: ShareFileInfo = {
           share_id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           share_user: currentUser,
@@ -562,7 +622,7 @@ const uploadFiles = async () => {
           file_name: file.name,
           share_time: '',
           file_size: String(file.size),
-          file_type: file.type,
+          file_type: guessMimeTypeFromExtension(file.name),
           description: fileDescription.value,
           share_state: null,
           tags: tags.value,
