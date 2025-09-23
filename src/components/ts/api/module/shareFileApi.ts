@@ -10,10 +10,24 @@ export default {
             params: { user_id: user_id },
         });
     },
-    uploadShare(file: File,shareFileInfo: ShareFileInfo):Promise<ReturnValue<ShareFileInfo>> {
+    uploadShare(
+        file: File,
+        shareFileInfo: ShareFileInfo,
+        onUploadProgress?: (progress: number) => void
+    ): Promise<ReturnValue<ShareFileInfo>> {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("shareFileInfoString", JSON.stringify(shareFileInfo));
-        return request.post("/module/shareFile/uploadShare", formData, );
+
+        return request.post("/module/shareFile/uploadShare", formData, {
+            timeout: 600000,
+            onUploadProgress: (progressEvent) => {
+                if (progressEvent.total) {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    console.log(`上传进度：${percentCompleted}%`);
+                    onUploadProgress?.(percentCompleted); // 👈 传递给外部
+                }
+            },
+        });
     },
 }

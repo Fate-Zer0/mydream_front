@@ -241,7 +241,14 @@
                     >
                       <div class="flex items-start gap-4">
                         <!-- 文件图标 -->
-                        <div class="text-4xl">{{ getFileIcon(file.file_type) }}</div>
+                        <div
+                            class="text-4xl cursor-pointer"
+                            @click="isImageFile(file.file_type) ? previewImage(file) : null"
+                            :class="isImageFile(file.file_type) ? 'hover:scale-110 transition-transform' : ''"
+                            :title="isImageFile(file.file_type) ? '点击预览图片' : ''"
+                        >
+                          {{ getFileIcon(file.file_type) }}
+                        </div>
 
                         <!-- 文件信息 -->
                         <div class="flex-1 min-w-0">
@@ -271,6 +278,18 @@
 
                             <!-- 操作按钮 -->
                             <div class="flex flex-col gap-2 ml-4">
+                              <!-- 预览按钮（仅图片显示） -->
+                              <button
+                                  v-if="isImageFile(file.file_type)"
+                                  @click="previewImage(file)"
+                                  class="btn btn-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 rounded-lg hover:from-purple-600 hover:to-pink-600"
+                              >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                预览
+                              </button>
                               <button
                                   @click="downloadFile(file)"
                                   class="btn btn-xs bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 rounded-lg hover:from-blue-600 hover:to-indigo-600"
@@ -331,6 +350,78 @@
       </div>
     </div>
 
+    <!-- 图片预览弹窗 -->
+    <div v-if="showImagePreview" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]" @click="closeImagePreview">
+      <div class="max-w-[90vw] max-h-[90vh] relative" @click.stop>
+        <!-- 关闭按钮 -->
+        <button
+            @click="closeImagePreview"
+            class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full p-2"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+
+        <!-- 图片信息 -->
+        <div v-if="previewFile" class="absolute -top-16 left-0 text-white bg-black/50 px-4 py-2 rounded-lg">
+          <h3 class="font-semibold">{{ previewFile.file_name }}</h3>
+          <p class="text-sm opacity-75">{{ formatFileSize(Number(previewFile.file_size)) }}</p>
+        </div>
+
+        <!-- 加载指示器 -->
+        <div v-if="imageLoading" class="flex items-center justify-center bg-white/10 rounded-lg p-8">
+          <div class="text-white text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p>加载中...</p>
+          </div>
+        </div>
+
+        <!-- 图片容器 -->
+        <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+          <img
+              v-if="previewImageUrl && !imageLoadError"
+              :src="previewImageUrl"
+              :alt="previewFile?.file_name"
+              class="max-w-full max-h-[80vh] object-contain"
+              @load="imageLoading = false"
+              @error="handleImageError"
+          />
+
+          <!-- 图片加载失败 -->
+          <div v-if="imageLoadError" class="flex items-center justify-center p-12 text-gray-500">
+            <div class="text-center">
+              <div class="text-6xl mb-4">🖼️</div>
+              <h3 class="text-xl font-semibold mb-2">无法加载图片</h3>
+              <p class="text-sm">图片可能已损坏或格式不支持</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div v-if="previewFile && !imageLoadError" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+          <button
+              @click="downloadFile(previewFile)"
+              class="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors flex items-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            下载
+          </button>
+          <button
+              @click="openImageInNewTab"
+              class="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors flex items-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+            新窗口打开
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 侧边抽屉菜单 -->
     <SideDrawer :menu-items="menuItems" />
   </div>
@@ -382,6 +473,13 @@ const fileInput = ref();
 const searchTerm = ref('');
 const selectedTagFilter = ref('');
 
+// 图片预览相关状态
+const showImagePreview = ref(false);
+const previewImageUrl = ref('');
+const previewFile = ref<ShareFileInfo | null>(null);
+const imageLoading = ref(false);
+const imageLoadError = ref(false);
+
 const shareFiles = ref<ShareFileInfo[]>([
   {
     share_id: '',
@@ -396,6 +494,7 @@ const shareFiles = ref<ShareFileInfo[]>([
     tags: null,
   }
 ]);
+
 // 计算属性
 const filteredFiles = computed(() => {
   let filtered = shareFiles.value;
@@ -412,7 +511,7 @@ const filteredFiles = computed(() => {
   // 按标签过滤
   if (selectedTagFilter.value) {
     filtered = filtered.filter(file =>
-        file.tags.some(tag => tag.tag_name === selectedTagFilter.value)
+        file.tags && file.tags.some(tag => tag.tag_name === selectedTagFilter.value)
     );
   }
 
@@ -447,6 +546,18 @@ const getFileIcon = (type: string): string => {
   if (type.includes('audio')) return '🎵';
   if (type.includes('zip') || type.includes('rar')) return '📦';
   return '📎';
+};
+
+// 判断是否为图片文件
+const isImageFile = (type: string): boolean => {
+  return type.includes('image/') ||
+      type.includes('jpeg') ||
+      type.includes('jpg') ||
+      type.includes('png') ||
+      type.includes('gif') ||
+      type.includes('webp') ||
+      type.includes('svg') ||
+      type.includes('bmp');
 };
 
 const guessMimeTypeFromExtension = (filename: string): string => {
@@ -607,14 +718,16 @@ const uploadFiles = async () => {
   try {
     let successCount = 0;
     let failureCount = 0;
+    let currentFileIndex = 0;
 
-    let count = 0;
+    for (const file of selectedFiles.value) {
+      currentFileIndex++;
 
-    for (const file of selectedFiles.value) { // 使用 for...of 更清晰
-      count ++;
-      uploadProgress.value = count / selectedFiles.value.length * 100;
+      // 👇 计算当前文件在整个任务中的"进度区间"
+      const startProgress = ((currentFileIndex - 1) / selectedFiles.value.length) * 100;
+      const endProgress = (currentFileIndex / selectedFiles.value.length) * 100;
+
       try {
-        alert(file.type);
         const shareFile: ShareFileInfo = {
           share_id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           share_user: currentUser,
@@ -628,7 +741,13 @@ const uploadFiles = async () => {
           tags: tags.value,
         };
 
-        const res = await withRequest(() => api.module.shareFile.uploadShare(file, shareFile));
+        // 👇 传入进度回调
+        const res = await withRequest(() =>
+            api.module.shareFile.uploadShare(file, shareFile, (singleProgress) => {
+              // 👇 计算整体进度 = 已完成文件 + 当前文件进度占比
+              uploadProgress.value = startProgress + (singleProgress / 100) * (endProgress - startProgress);
+            })
+        );
 
         if (res?.retValue) {
           shareFiles.value.unshift(res.retValue);
@@ -651,13 +770,55 @@ const uploadFiles = async () => {
 
     clearFiles();
     showUploadProgress.value = false;
-
   } catch (error) {
     console.error('上传过程出错:', error);
     alert('上传失败，请重试');
   } finally {
     isUploading.value = false;
-    uploadProgress.value = 0;
+    uploadProgress.value = 0; // 上传结束清零（或保留100%也可）
+  }
+};
+
+// 图片预览相关方法
+const previewImage = (file: ShareFileInfo) => {
+  if (!isImageFile(file.file_type)) return;
+
+  previewFile.value = file;
+  previewImageUrl.value = file.share_file?.file_url || '';
+  imageLoading.value = true;
+  imageLoadError.value = false;
+  showImagePreview.value = true;
+
+  // 阻止页面滚动
+  document.body.style.overflow = 'hidden';
+};
+
+const closeImagePreview = () => {
+  showImagePreview.value = false;
+  previewImageUrl.value = '';
+  previewFile.value = null;
+  imageLoading.value = false;
+  imageLoadError.value = false;
+
+  // 恢复页面滚动
+  document.body.style.overflow = '';
+};
+
+const handleImageError = () => {
+  imageLoading.value = false;
+  imageLoadError.value = true;
+};
+
+const openImageInNewTab = () => {
+  if (previewImageUrl.value) {
+    window.open(previewImageUrl.value, '_blank');
+  }
+};
+
+// 监听 ESC 键关闭预览
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && showImagePreview.value) {
+    closeImagePreview();
   }
 };
 
@@ -684,6 +845,14 @@ const deleteFile = (file: ShareFileInfo) => {
 
 onMounted(async () => {
   await getShareFile(currentUser.user_id);
+
+  // 添加键盘事件监听
+  window.addEventListener('keydown', handleKeydown);
+
+  // 组件卸载时移除监听器
+  return () => {
+    window.removeEventListener('keydown', handleKeydown);
+  };
 });
 
 const getShareFile = async (userid) => {
