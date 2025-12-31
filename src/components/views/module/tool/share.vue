@@ -128,7 +128,7 @@
                             :key="index"
                             class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
                         >
-                          {{ tag }}
+                          {{ tag.tag_name }}
                           <button @click="removeTag(index)" class="hover:text-red-500">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -237,78 +237,103 @@
                     <div
                         v-for="file in filteredFiles"
                         :key="file.share_id"
-                        class="file-item p-4 rounded-2xl cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:shadow-lg hover:scale-[1.02] bg-white/70 border border-gray-200"
+                        class="file-item group relative rounded-2xl bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 p-[3px] shadow-md hover:shadow-xl overflow-hidden"
                     >
-                      <div class="flex items-start gap-4">
-                        <!-- 文件图标 -->
-                        <div
-                            class="text-4xl cursor-pointer"
-                            @click="isImageFile(file.file_type) ? previewImage(file) : null"
-                            :class="isImageFile(file.file_type) ? 'hover:scale-110 transition-transform' : ''"
-                            :title="isImageFile(file.file_type) ? '点击预览图片' : ''"
-                        >
-                          {{ getFileIcon(file.file_type) }}
+                      <!-- 内层白色背景 -->
+                      <div class="relative rounded-2xl bg-white h-full p-5">
+                        <!-- 顶部区域：图标 + 文件名 + 操作按钮 -->
+                        <div class="flex items-start justify-between mb-3">
+                          <!-- 左侧：图标 + 文件名 -->
+                          <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <!-- 文件图标 -->
+                            <div
+                                class="text-5xl w-16 h-16 flex items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex-shrink-0"
+                                @click="isImageFile(file.file_type) ? previewImage(file) : null"
+                                :class="isImageFile(file.file_type) ? 'hover:from-purple-200 hover:to-blue-200' : ''"
+                                :title="isImageFile(file.file_type) ? '点击预览图片' : ''"
+                            >
+                              {{ getFileIcon(file.file_type) }}
+                            </div>
+
+                            <!-- 文件名 -->
+                            <h3 class="font-bold text-gray-900 text-lg truncate flex-1">
+                              {{ file.file_name || '未命名文件' }}
+                            </h3>
+                          </div>
+
+                          <!-- 右侧：操作按钮 -->
+                          <div class="flex items-center gap-2 ml-3">
+                            <button
+                                v-if="isImageFile(file.file_type)"
+                                @click.stop="previewImage(file)"
+                                class="w-9 h-9 flex items-center justify-center bg-blue-500 text-white rounded-full hover:bg-blue-600 shadow-md cursor-pointer"
+                                title="预览"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                              </svg>
+                            </button>
+
+                            <button
+                                @click.stop="downloadFile(file)"
+                                class="w-9 h-9 flex items-center justify-center bg-blue-500 text-white rounded-full hover:bg-blue-600 shadow-md cursor-pointer"
+                                title="下载"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                              </svg>
+                            </button>
+
+                            <button
+                                @click.stop="deleteFile(file)"
+                                class="w-9 h-9 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md cursor-pointer"
+                                title="删除"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                              </svg>
+                            </button>
+                          </div>
                         </div>
 
-                        <!-- 文件信息 -->
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-start justify-between">
-                            <div class="min-w-0 flex-1">
-                              <h3 class="font-semibold text-gray-800 truncate">{{ file.file_name || '未命名文件' }}</h3>
-                              <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ file.description || '暂无描述' }}</p>
+                        <!-- 描述 -->
+                        <p class="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-2">
+                          {{ file.description || '暂无描述' }}
+                        </p>
 
-                              <!-- 文件详情 -->
-                              <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                <span>{{ formatFileSize(Number(file.file_size)) }}</span>
-                                <span>{{ file.share_user?.user_name||'未命名用户' }}</span>
-                                <span>{{ formatTime(file.share_time) }}</span>
-                              </div>
+                        <!-- 标签 -->
+                        <div v-if="file.tags && file.tags.length > 0" class="flex flex-wrap gap-2 mb-4">
+      <span
+          v-for="tag in file.tags"
+          :key="tag.tag_id"
+          class="inline-flex items-center px-2.5 py-1 bg-purple-100 text-purple-700 text-xs rounded-lg font-semibold"
+      >
+        {{ tag.tag_name }}
+      </span>
+                        </div>
 
-                              <!-- 标签 -->
-                              <div v-if="file.tags != null && file.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
-                                <span
-                                    v-for="tag in file.tags"
-                                    :key="tag.tag_id"
-                                    class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 px-2 py-1 rounded-full text-xs"
-                                >
-                                  {{ tag }}
-                                </span>
-                              </div>
-                            </div>
+                        <!-- 底部信息卡片 -->
+                        <div class="grid grid-cols-3 gap-2">
+                          <div class="bg-blue-50 rounded-lg p-2.5 text-center border border-blue-100">
+                            <svg class="w-4 h-4 mx-auto mb-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            <div class="text-xs font-bold text-gray-900">{{ formatFileSize(Number(file.file_size)) }}</div>
+                          </div>
 
-                            <!-- 操作按钮 -->
-                            <div class="flex flex-col gap-2 ml-4">
-                              <!-- 预览按钮（仅图片显示） -->
-                              <button
-                                  v-if="isImageFile(file.file_type)"
-                                  @click="previewImage(file)"
-                                  class="btn btn-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 rounded-lg hover:from-purple-600 hover:to-pink-600"
-                              >
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                </svg>
-                                预览
-                              </button>
-                              <button
-                                  @click="downloadFile(file)"
-                                  class="btn btn-xs bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 rounded-lg hover:from-blue-600 hover:to-indigo-600"
-                              >
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                下载
-                              </button>
-                              <button
-                                  @click="deleteFile(file)"
-                                  class="btn btn-xs bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 rounded-lg hover:from-red-600 hover:to-pink-600"
-                              >
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                删除
-                              </button>
-                            </div>
+                          <div class="bg-purple-50 rounded-lg p-2.5 text-center border border-purple-100">
+                            <svg class="w-4 h-4 mx-auto mb-1 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <div class="text-xs font-bold text-gray-900 truncate">{{ file.share_user?.user_name || '未命名用户' }}</div>
+                          </div>
+
+                          <div class="bg-pink-50 rounded-lg p-2.5 text-center border border-pink-100">
+                            <svg class="w-4 h-4 mx-auto mb-1 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-xs font-bold text-gray-900 truncate">{{ formatTime(file.share_time) }}</div>
                           </div>
                         </div>
                       </div>
@@ -464,7 +489,7 @@ interface FileInfo {
 const selectedFiles = ref<File[]>([]);
 const fileDescription = ref('');
 const tagInput = ref('');
-const fileTags = ref<string[]>([]);
+const fileTags = ref<Tag[]>([]);
 const isDragOver = ref(false);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
@@ -688,25 +713,29 @@ const clearFiles = () => {
 
 // 标签操作
 const addTag = () => {
-  const tag = tagInput.value.trim();
-  if (tag && !fileTags.value.includes(tag)) {
-    fileTags.value.push(tag);
-    tagInput.value = '';
-  }
+  const tagName = tagInput.value.trim();
+  if (!tagName) return;
+
+  // 检查是否已存在相同 tag_name 的标签
+  const exists = fileTags.value.some(t => t.tag_name === tagName);
+  if (exists) return;
+
+  const newTag: Tag = {
+    conn_id: '',
+    tag_id: '', // 或使用其他唯一 ID 生成方式
+    tag_name: tagName,
+    tag_state: '',
+  };
+
+  fileTags.value.push(newTag);
+  tagInput.value = ''; // 清空输入框
 };
 
 const removeTag = (index: number) => {
   fileTags.value.splice(index, 1);
 };
 
-const tags = computed<Tag[]>(() => {
-  return fileTags.value.map(tagName => ({
-    tag_name: tagName,
-    tag_id: '',
-    conn_id: '', // 填充你的业务逻辑
-    tag_state: '',
-  }));
-});
+const tags = computed(() => fileTags.value);
 
 const uploadFiles = async () => {
   if (selectedFiles.value.length === 0) return;

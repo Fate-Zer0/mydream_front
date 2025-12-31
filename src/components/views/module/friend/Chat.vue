@@ -916,30 +916,37 @@ async function flushAddFriendInfo(){
 }
 
 onMounted(async () => {
-  wsService.onMessage(async(data) => {
-    if(data.type == "Chat"){
-      if(data.to == currentUser.user_id){
-        await getLastMessage(currentUser.user_id,selectedFriend.value.chat_user.user.user_id);
-      }else{
-        await getChatInfoList(currentUser.user_id);
+  // WebSocket 消息监听器
+  wsService.onMessage(async (data) => {
+    try {
+      if (data.type === "Chat") {
+        if (data.to === currentUser.user_id) {
+          await getLastMessage(currentUser.user_id, selectedFriend.value.chat_user.user.user_id);
+        } else {
+          await getChatInfoList(currentUser.user_id);
+        }
       }
+    } catch (error) {
+      console.error('处理WebSocket消息失败:', error);
     }
   });
 
-  await getChatInfoList(currentUser.user_id);
-
-  if (ChatInfos.value.length > 0) {
-    await selectFriend(ChatInfos.value[0]);
-  }
-
-  sentRequestIds.value = new Set(
-      sentApplications.value.map(app => app.fri_id)
-  );
-
   try {
+    // 获取聊天信息列表
+    await getChatInfoList(currentUser.user_id);
+
+    // 自动选择第一个聊天
+    if (ChatInfos.value.length > 0) {
+      await selectFriend(ChatInfos.value[0]);
+    }
+
+    // 初始化已发送好友请求的ID集合
+    sentRequestIds.value = new Set(sentApplications.value.map(app => app.fri_id));
+
+    // 刷新添加好友的信息
     await flushAddFriendInfo();
   } catch (error) {
-    console.error('刷新添加好友信息失败:', error);
+    console.error('初始化过程中发生错误:', error);
   }
 });
 </script>
