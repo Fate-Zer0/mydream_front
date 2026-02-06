@@ -4,6 +4,7 @@ import friend from './friendApi';
 import chat from './chatApi';
 import pageBox from './pageBoxApi';
 import shareFile from './shareFileApi';
+import pianoApi from './pianoApi';
 export default {
     msgBoard,
     record,
@@ -11,4 +12,5 @@ export default {
     chat,
     pageBox,
     shareFile,
+    piano: pianoApi,
 };

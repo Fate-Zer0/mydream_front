@@ -781,6 +781,20 @@ const uploadFiles = async () => {
         if (res?.retValue) {
           shareFiles.value.unshift(res.retValue);
           successCount++;
+          
+          // 创建文件分享动态
+          try {
+            await api.activity.createActivity({
+              userId: userStore.getUserid(),
+              activityType: "FILE",
+              activityTitle: "文件分享",
+              activityDesc: `分享了文件：${file.name}`,
+              relatedId: String(res.retValue.share_id),
+              isPublic: 1,
+            });
+          } catch (e) {
+            console.error('创建动态失败', e);
+          }
         } else {
           failureCount++;
         }

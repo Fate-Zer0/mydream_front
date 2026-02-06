@@ -31,6 +31,16 @@ export default {
     },
 
     /**
+     * 获取签到排行榜
+     * @param limit - 返回前N名，默认10
+     */
+    getSignInRanking(limit: number = 10): Promise<ReturnValue<SignInRankingItem[]>> {
+        return request.get("/account/user/getSignInRanking", {
+            params: { limit },
+        });
+    },
+
+    /**
      * 获取用户签到日期
      * @param userid  - 用户ID
      * @param year - 年份
@@ -131,4 +141,16 @@ export type SignInInfo = {
     maxConsecutiveSignInDays: number;
     signInCount: number;
     isSigned: boolean;
+    todayPoints: number;
+    tomorrowPoints: number;
+    currentDay: number;
+};
+
+export type SignInRankingItem = {
+    userId: string;
+    username: string;
+    avatar: string;
+    consecutiveDays: number;
+    totalSignInDays: number;
+    totalPoints: string;
 };

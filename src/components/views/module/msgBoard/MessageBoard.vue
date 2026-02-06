@@ -234,6 +234,23 @@ const addReplyToMessage = async (reply: MsgBoard): Promise<void> => {
     newMessage.value = ""
     showSuccessToast('留言发布成功！');
     await getMsgBoardInfo(userStore.getUserid())
+    
+    // 创建留言板动态
+    try {
+      const content = reply.msg_content || '';
+      const preview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+      
+      await api.activity.createActivity({
+        userId: userStore.getUserid(),
+        activityType: "MESSAGE",
+        activityTitle: "留言板",
+        activityDesc: `发表了新留言：${preview}`,
+        relatedId: reply.msg_id || '',
+        isPublic: 1,
+      });
+    } catch (e) {
+      console.error('创建动态失败', e);
+    }
   }
 }
 

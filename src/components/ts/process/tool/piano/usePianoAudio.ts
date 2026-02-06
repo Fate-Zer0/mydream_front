@@ -9,7 +9,8 @@ interface AudioContext extends BaseAudioContext {
 
 export const usePianoAudio = () => {
     const audioContext = ref<AudioContext | null>(null)
-    const activeOscillators = ref(new Map<number, { oscillator: OscillatorNode; gain: GainNode }>())
+    const activeOscillators = ref(new Map<number, { oscillators: OscillatorNode[]; gains: GainNode[] }>())
+    const masterVolume = ref(0.6) // 主音量控制
 
     // 初始化 Web Audio Context
     const initAudioContext = () => {
@@ -18,7 +19,7 @@ export const usePianoAudio = () => {
         }
     }
 
-    // 播放音符
+    // ✅ 改进的播放音符 - 更真实的钢琴音色
     const playNote = (frequency: number) => {
         initAudioContext()
 
@@ -29,87 +30,120 @@ export const usePianoAudio = () => {
             stopNote(frequency)
         }
 
-        // 创建振荡器和增益节点
-        const oscillator = audioContext.value.createOscillator()
-        const gainNode = audioContext.value.createGain()
+        const ctx = audioContext.value
+        const now = ctx.currentTime
+        
+        // 存储所有振荡器和增益节点
+        const oscillators: OscillatorNode[] = []
+        const gains: GainNode[] = []
 
-        // 设置钢琴音色（使用复合波形模拟钢琴音色）
-        oscillator.type = 'triangle' // 基础音色
-        oscillator.frequency.setValueAtTime(frequency, audioContext.value.currentTime)
+        // ✅ 创建复杂的钢琴音色（基础音 + 多个谐波）
+        const harmonics = [
+            { ratio: 1, amplitude: 1.0, type: 'triangle' as OscillatorType },      // 基频
+            { ratio: 2, amplitude: 0.4, type: 'sine' as OscillatorType },         // 2次谐波
+            { ratio: 3, amplitude: 0.25, type: 'sine' as OscillatorType },        // 3次谐波
+            { ratio: 4, amplitude: 0.15, type: 'sine' as OscillatorType },        // 4次谐波
+            { ratio: 5, amplitude: 0.1, type: 'sine' as OscillatorType },         // 5次谐波
+            { ratio: 6, amplitude: 0.05, type: 'sine' as OscillatorType },        // 6次谐波
+        ]
 
-        // 设置 ADSR 包络（攻击、衰减、持续、释放）
-        const now = audioContext.value.currentTime
-        gainNode.gain.setValueAtTime(0, now)
-        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.01) // 攻击
-        gainNode.gain.exponentialRampToValueAtTime(0.2, now + 0.1) // 衰减
-        gainNode.gain.setValueAtTime(0.2, now + 0.1) // 持续
+        harmonics.forEach(({ ratio, amplitude, type }) => {
+            const oscillator = ctx.createOscillator()
+            const gainNode = ctx.createGain()
+            const filter = ctx.createBiquadFilter()
 
-        // 连接节点
-        oscillator.connect(gainNode)
-        gainNode.connect(audioContext.value.destination)
+            oscillator.type = type
+            oscillator.frequency.setValueAtTime(frequency * ratio, now)
 
-        // 启动振荡器
-        oscillator.start(now)
+            // ✅ 添加低通滤波器，让高频更柔和
+            filter.type = 'lowpass'
+            filter.frequency.setValueAtTime(frequency * ratio * 2, now)
+            filter.Q.setValueAtTime(1, now)
 
-        // 存储活跃的振荡器
-        activeOscillators.value.set(frequency, { oscillator, gain: gainNode })
+            // ✅ 更真实的 ADSR 包络
+            const finalAmplitude = amplitude * masterVolume.value * 0.3
+            gainNode.gain.setValueAtTime(0, now)
+            gainNode.gain.linearRampToValueAtTime(finalAmplitude, now + 0.005) // 快速攻击
+            gainNode.gain.exponentialRampToValueAtTime(finalAmplitude * 0.7, now + 0.08) // 衰减
+            gainNode.gain.setValueAtTime(finalAmplitude * 0.6, now + 0.08) // 持续
 
-        // 添加泛音以增强音色真实感
-        createHarmonic(frequency, 0.1, 2) // 二次谐波
-        createHarmonic(frequency, 0.05, 3) // 三次谐波
-        createHarmonic(frequency, 0.03, 4) // 四次谐波
+            // 连接：振荡器 -> 滤波器 -> 增益 -> 目标
+            oscillator.connect(filter)
+            filter.connect(gainNode)
+            gainNode.connect(ctx.destination)
+
+            oscillator.start(now)
+
+            oscillators.push(oscillator)
+            gains.push(gainNode)
+        })
+
+        // ✅ 添加轻微的噪音来模拟锤击弦的声音
+        createHammerNoise(ctx, now)
+
+        // 存储活跃的振荡器组
+        activeOscillators.value.set(frequency, { oscillators, gains })
     }
 
-    // 创建谐波
-    const createHarmonic = (baseFreq: number, amplitude: number, harmonic: number) => {
-        if (!audioContext.value) return
+    // ✅ 创建锤击声音（模拟琴锤敲击琴弦的噪音）
+    const createHammerNoise = (ctx: AudioContext, startTime: number) => {
+        const bufferSize = ctx.sampleRate * 0.05 // 50ms 的噪音
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+        const data = buffer.getChannelData(0)
 
-        const oscillator = audioContext.value.createOscillator()
-        const gainNode = audioContext.value.createGain()
+        // 生成白噪音并应用快速衰减包络
+        for (let i = 0; i < bufferSize; i++) {
+            const envelope = Math.exp(-i / (bufferSize * 0.1)) // 快速衰减
+            data[i] = (Math.random() * 2 - 1) * envelope * 0.03 // 很小的音量
+        }
 
-        oscillator.type = 'sine'
-        oscillator.frequency.setValueAtTime(baseFreq * harmonic, audioContext.value.currentTime)
+        const noise = ctx.createBufferSource()
+        const noiseGain = ctx.createGain()
+        const noiseFilter = ctx.createBiquadFilter()
 
-        const now = audioContext.value.currentTime
-        gainNode.gain.setValueAtTime(0, now)
-        gainNode.gain.linearRampToValueAtTime(amplitude, now + 0.01)
-        gainNode.gain.exponentialRampToValueAtTime(amplitude * 0.7, now + 0.1)
+        noise.buffer = buffer
+        noiseFilter.type = 'highpass'
+        noiseFilter.frequency.setValueAtTime(2000, startTime) // 只保留高频
 
-        oscillator.connect(gainNode)
-        gainNode.connect(audioContext.value.destination)
+        noiseGain.gain.setValueAtTime(masterVolume.value * 0.3, startTime)
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.02)
 
-        oscillator.start(now)
+        noise.connect(noiseFilter)
+        noiseFilter.connect(noiseGain)
+        noiseGain.connect(ctx.destination)
 
-        // 谐波持续时间稍短
-        setTimeout(() => {
-            if (gainNode.gain) {
-                const stopTime = audioContext.value!.currentTime
-                gainNode.gain.exponentialRampToValueAtTime(0.001, stopTime + 0.3)
-                oscillator.stop(stopTime + 0.3)
-            }
-        }, 100)
+        noise.start(startTime)
+        noise.stop(startTime + 0.05)
     }
 
-    // 停止音符
+    // ✅ 改进的停止音符 - 处理多个振荡器
     const stopNote = (frequency: number) => {
         const activeNote = activeOscillators.value.get(frequency)
         if (activeNote && audioContext.value) {
-            const { oscillator, gain } = activeNote
-
-            // 渐隐效果
+            const { oscillators, gains } = activeNote
             const now = audioContext.value.currentTime
-            gain.gain.cancelScheduledValues(now)
-            gain.gain.setValueAtTime(gain.gain.value, now)
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
 
-            // 延迟停止振荡器
-            setTimeout(() => {
+            // 对所有增益节点应用释放包络
+            gains.forEach(gain => {
                 try {
-                    oscillator.stop()
+                    gain.gain.cancelScheduledValues(now)
+                    gain.gain.setValueAtTime(gain.gain.value, now)
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4) // 较长的释放时间
                 } catch (e) {
-                    // 忽略已停止的振荡器错误
+                    // 忽略错误
                 }
-            }, 300)
+            })
+
+            // 延迟停止所有振荡器
+            setTimeout(() => {
+                oscillators.forEach(oscillator => {
+                    try {
+                        oscillator.stop()
+                    } catch (e) {
+                        // 忽略已停止的振荡器错误
+                    }
+                })
+            }, 400)
 
             activeOscillators.value.delete(frequency)
         }
@@ -127,68 +161,33 @@ export const usePianoAudio = () => {
         frequencies.forEach(freq => playNote(freq))
     }
 
-    // 创建简单的钢琴采样音（base64编码的短音频）
-    const createPianoSample = (frequency: number): string => {
-        // 这里返回一个基于频率生成的简单音频数据URL
-        // 实际应用中可以使用真实的钢琴采样
-        return `data:audio/wav;base64,${generateSimpleWaveform(frequency)}`
+    // ✅ 设置主音量
+    const setVolume = (volume: number) => {
+        masterVolume.value = Math.max(0, Math.min(1, volume)) // 限制在 0-1 之间
     }
 
-    // 生成简单波形（用于演示）
-    const generateSimpleWaveform = (frequency: number): string => {
-        const sampleRate = 44100
-        const duration = 1
-        const samples = sampleRate * duration
-        const buffer = new ArrayBuffer(44 + samples * 2)
-        const view = new DataView(buffer)
+    // ✅ 获取当前音量
+    const getVolume = () => {
+        return masterVolume.value
+    }
 
-        // WAV 文件头
-        const writeString = (offset: number, string: string) => {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i))
+    // ✅ 创建混响效果（可选）
+    const createReverb = (ctx: AudioContext): ConvolverNode => {
+        const convolver = ctx.createConvolver()
+        const reverbTime = 2 // 混响时间（秒）
+        const sampleRate = ctx.sampleRate
+        const length = sampleRate * reverbTime
+        const impulse = ctx.createBuffer(2, length, sampleRate)
+
+        for (let channel = 0; channel < 2; channel++) {
+            const channelData = impulse.getChannelData(channel)
+            for (let i = 0; i < length; i++) {
+                channelData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sampleRate * 0.5))
             }
         }
 
-        writeString(0, 'RIFF')
-        view.setUint32(4, 36 + samples * 2, true)
-        writeString(8, 'WAVE')
-        writeString(12, 'fmt ')
-        view.setUint32(16, 16, true)
-        view.setUint16(20, 1, true)
-        view.setUint16(22, 1, true)
-        view.setUint32(24, sampleRate, true)
-        view.setUint32(28, sampleRate * 2, true)
-        view.setUint16(32, 2, true)
-        view.setUint16(34, 16, true)
-        writeString(36, 'data')
-        view.setUint32(40, samples * 2, true)
-
-        // 生成音频数据
-        let offset = 44
-        for (let i = 0; i < samples; i++) {
-            const t = i / sampleRate
-            let sample = Math.sin(2 * Math.PI * frequency * t) * 0.3
-
-            // 添加包络
-            const envelope = Math.exp(-t * 2)
-            sample *= envelope
-
-            // 添加一些谐波
-            sample += Math.sin(2 * Math.PI * frequency * 2 * t) * 0.1 * envelope
-            sample += Math.sin(2 * Math.PI * frequency * 3 * t) * 0.05 * envelope
-
-            const intSample = Math.max(-32768, Math.min(32767, Math.floor(sample * 32767)))
-            view.setInt16(offset, intSample, true)
-            offset += 2
-        }
-
-        // 转换为 base64
-        const bytes = new Uint8Array(buffer)
-        let binary = ''
-        for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i])
-        }
-        return btoa(binary)
+        convolver.buffer = impulse
+        return convolver
     }
 
     return {
@@ -196,6 +195,8 @@ export const usePianoAudio = () => {
         stopNote,
         stopAllNotes,
         playChord,
+        setVolume,
+        getVolume,
         audioContext
     }
 }

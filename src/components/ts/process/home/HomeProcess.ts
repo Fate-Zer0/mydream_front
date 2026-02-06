@@ -16,6 +16,9 @@ export function useHomeProcess() {
 		consecutive: 0,
 		maxConsecutive: 0,
 		total: 0,
+		todayPoints: 0,
+		tomorrowPoints: 0,
+		currentDay: 0,
 	});
 
 	async function getSigningInInfo(userid?: string) {
@@ -27,6 +30,9 @@ export function useHomeProcess() {
 			signInStats.value.consecutive = map.consecutiveSignInDays;
 			signInStats.value.maxConsecutive = map.maxConsecutiveSignInDays;
 			signInStats.value.total = map.signInCount;
+			signInStats.value.todayPoints = map.todayPoints;
+			signInStats.value.tomorrowPoints = map.tomorrowPoints;
+			signInStats.value.currentDay = map.currentDay;
 			hasSigned.value = map.isSigned;
 		}
 		isSigningIn.value = false;

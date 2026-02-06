@@ -23,6 +23,9 @@ export const useRecording = () => {
     const isPlaying = ref(false)
     const recordingStartTime = ref<number>(0)
     const activeNotes = ref(new Map<string, RecordedEvent>())
+    let recordingTimer: ReturnType<typeof setTimeout> | null = null
+
+    const MAX_RECORDING_DURATION = 120000 // 120秒 = 120000毫秒
 
     // 开始录制
     const startRecording = () => {
@@ -33,6 +36,15 @@ export const useRecording = () => {
         recordingStartTime.value = Date.now()
         activeNotes.value.clear()
         console.log('🎤 开始录制...')
+
+        // 设置120秒自动停止
+        recordingTimer = setTimeout(() => {
+            if (isRecording.value) {
+                stopRecording()
+                console.log('⚠️ 录制已达到最大时长（120秒），自动停止')
+                window.dispatchEvent(new CustomEvent('recording-max-duration'))
+            }
+        }, MAX_RECORDING_DURATION)
     }
 
     // 停止录制
@@ -40,6 +52,12 @@ export const useRecording = () => {
         if (!isRecording.value) return
 
         isRecording.value = false
+
+        // 清除定时器
+        if (recordingTimer) {
+            clearTimeout(recordingTimer)
+            recordingTimer = null
+        }
 
         // 结束所有未完成的音符
         activeNotes.value.forEach((event, noteId) => {
