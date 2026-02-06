@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/shims-vue.d.ts","./src/vite-env.d.ts","./src/components/composables/usecarousel.ts","./src/components/process/home/homeprocess.ts","./src/components/process/login/loginprocess.ts","./src/components/process/login/loginsetup.ts","./src/components/router/login/loginrouter.ts","./src/components/stores/userApi.ts"],"errors":true,"version":"5.8.3"}
