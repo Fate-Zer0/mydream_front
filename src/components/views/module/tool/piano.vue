@@ -828,8 +828,7 @@ const submitShare = async () => {
         userId,
         activityType: 'PIANO',
         activityTitle: '分享了钢琴作品',
-        activityDesc: `分享了钢琴作品《${recordingName}》`,
-        activityContent: `时长${recordingStats.value.duration}秒，${recordingStats.value.uniqueNotes}个音符`,
+        activityDesc: `分享了钢琴作品《${recordingName}》，时长${recordingStats.value.duration}秒，${recordingStats.value.uniqueNotes}个音符`,
         relatedId: response.retValue.toString(),
         isPublic: shareIsPublic.value
       })

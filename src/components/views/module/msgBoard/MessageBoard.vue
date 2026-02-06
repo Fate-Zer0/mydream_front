@@ -245,7 +245,7 @@ const addReplyToMessage = async (reply: MsgBoard): Promise<void> => {
         activityType: "MESSAGE",
         activityTitle: "留言板",
         activityDesc: `发表了新留言：${preview}`,
-        relatedId: reply.msg_id || '',
+        relatedId: String(reply.msg_id || ''),
         isPublic: 1,
       });
     } catch (e) {
